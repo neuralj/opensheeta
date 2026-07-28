@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.venv/
+*.db
+*.db-journal
+secrets.json
+.env
+*.log
