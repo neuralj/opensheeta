@@ -13,10 +13,16 @@ export interface DaemonConfig {
   automation: {
     tickIntervalMs: number
   }
+  cooldown: {
+    pingIntervalMs: number
+  }
   inbox: {
     dbPath: string
   }
   conversations: {
+    dbPath: string
+  }
+  tasks: {
     dbPath: string
   }
   secrets: {
@@ -39,11 +45,17 @@ export function loadConfig(overrides: Partial<DaemonConfig> = {}): DaemonConfig 
     automation: {
       tickIntervalMs: overrides.automation?.tickIntervalMs ?? DEFAULTS.automation.tickIntervalMs,
     },
+    cooldown: {
+      pingIntervalMs: overrides.cooldown?.pingIntervalMs ?? (Number(process.env.OS_COOLDOWN_PING_INTERVAL) || DEFAULTS.cooldown.pingIntervalMs),
+    },
     inbox: {
       dbPath: overrides.inbox?.dbPath ?? process.env.OS_INBOX_DB ?? DEFAULTS.inbox.dbPath,
     },
     conversations: {
       dbPath: overrides.conversations?.dbPath ?? process.env.OS_CONV_DB ?? DEFAULTS.conversations.dbPath,
+    },
+    tasks: {
+      dbPath: overrides.tasks?.dbPath ?? process.env.OS_TASKS_DB ?? DEFAULTS.tasks.dbPath,
     },
     secrets: {
       path: overrides.secrets?.path ?? process.env.OS_SECRETS_PATH ?? DEFAULTS.secrets.path,

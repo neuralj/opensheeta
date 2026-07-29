@@ -1,0 +1,39 @@
+[Unit]
+Description=Opensheeta AI Agent Daemon
+Documentation=https://github.com/neuralj/opensheeta
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=travis
+Group=travis
+
+WorkingDirectory=/opt/opensheeta
+
+ExecStart=/usr/bin/node dist/daemon.js
+
+Environment=NODE_ENV=production
+Environment=OS_HOST=127.0.0.1
+Environment=OS_PORT=8765
+Environment=OS_STATE_DIR=/var/lib/opensheeta
+Environment=OS_INBOX_DB=/var/lib/opensheeta/inbox.db
+Environment=OS_CONV_DB=/var/lib/opensheeta/conversations.db
+Environment=OS_TASKS_DB=/var/lib/opensheeta/tasks.db
+Environment=OS_SECRETS_PATH=/var/lib/opensheeta/secrets.json
+
+Restart=always
+RestartSec=10
+
+LimitNOFILE=65536
+
+StandardOutput=append:/var/log/opensheeta/stdout.log
+StandardError=append:/var/log/opensheeta/stderr.log
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/opensheeta /var/log/opensheeta /opt/opensheeta
+
+[Install]
+WantedBy=multi-user.target

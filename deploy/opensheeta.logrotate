@@ -1,0 +1,13 @@
+/var/log/opensheeta/*.log {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 travis travis
+    sharedscripts
+    postrotate
+        systemctl reload opensheeta > /dev/null 2>&1 || true
+    endscript
+}

@@ -18,6 +18,9 @@ export type OWServerEvent =
   | { type: "interrupted"; data: { iterations: number } }
   | { type: "input_rejected"; data: { error: string } }
   | { type: "model_changed"; data: { model: string; text: string } }
+  | { type: "task_update"; data: { id: string; status: string; error?: string; pipeline_id?: string; stage?: number } }
+  | { type: "queue_status"; data: { pending: number; paused: boolean; cooldowns: string[] } }
+  | { type: "pipeline_update"; data: { id: string; status: string; stage?: number; total?: number } }
 
 export interface OWReadyData {
   session_id: string

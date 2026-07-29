@@ -4,9 +4,13 @@
   "description": "Opensheeta — AI agent daemon",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/daemon.ts",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "tsx watch src/daemon.ts",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "tsup",
     "start": "tsx src/daemon.ts",
-    "build": "tsup",
     "test": "vitest",
     "typecheck": "tsc --noEmit",
     "mcp:connectors": "tsx mcp-servers/connector-server.ts",
@@ -24,6 +28,7 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/ws": "^8.5.0",
+    "concurrently": "^8.2.0",
     "tsup": "^8.5.1",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",

@@ -1,7 +1,7 @@
 export const DEFAULTS = {
   daemon: {
     port: 8765,
-    host: "127.0.0.1",
+    host: "0.0.0.0",
     logLevel: "info" as const,
   },
   opencode: {
@@ -12,11 +12,17 @@ export const DEFAULTS = {
   automation: {
     tickIntervalMs: 30_000,
   },
+  cooldown: {
+    pingIntervalMs: 840_000,
+  },
   inbox: {
     dbPath: "inbox.db",
   },
   conversations: {
     dbPath: "conversations.db",
+  },
+  tasks: {
+    dbPath: "tasks.db",
   },
   secrets: {
     path: "~/.config/opensheeta/secrets.json",

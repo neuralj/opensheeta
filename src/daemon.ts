@@ -12,6 +12,17 @@ import { createRestAPI } from "@/endpoints/rest-api"
 import { createGUIBroadcast } from "@/adapters/gui-broadcast"
 import { createInboxStore, type InboxStoreAdapter } from "@/adapters/inbox-store"
 import { createConversationStore, type ConversationStoreAdapter } from "@/adapters/conversation-store"
+import { createTaskStore, type TaskStoreAdapter } from "@/adapters/task-store"
+import { EventBus } from "@/scheduler/event-bus"
+import { createCooldownManager } from "@/scheduler/cooldown-manager"
+import { createQueueProcessor } from "@/scheduler/queue-processor"
+import { createPipelineRunner } from "@/scheduler/pipeline-runner"
+import { createRecurringScheduler } from "@/scheduler/recurring-scheduler"
+import { OpenCodeSSEEndpoint } from "@/endpoints/opencode-sse"
+import { createEventBridgeHandler } from "@/handlers/event-bridge-handler"
+import { createApprovalHandler } from "@/handlers/approval-handler"
+import { createUnattendedHandler } from "@/handlers/unattended-handler"
+import type { OpenCodeSSEEvent } from "@/types/opencode"
 
 process.on("uncaughtException", (err) => {
   console.error(JSON.stringify({ ts: new Date().toISOString(), level: "error", msg: "uncaughtException", error: err.message, stack: err.stack }))
@@ -34,13 +45,12 @@ async function main(): Promise<void> {
     standalone,
   })
 
-  // Initialize adapters
   const secretStore = createSecretStore(config.secrets.path, logger)
   const broadcast = createGUIBroadcast(logger)
 
-  // Initialize stores (optional in standalone mode)
   let inbox: InboxStoreAdapter | null = null
   let conversations: ConversationStoreAdapter | null = null
+  let taskStore: TaskStoreAdapter | null = null
 
   try {
     inbox = await createInboxStore(config.inbox.dbPath, logger)
@@ -56,7 +66,13 @@ async function main(): Promise<void> {
     log.warn("Failed to initialize conversation store", { error: String(err) })
   }
 
-  // Initialize OpenCode API client
+  try {
+    taskStore = await createTaskStore(config.tasks.dbPath, logger)
+    log.info("Task store initialized", { path: config.tasks.dbPath })
+  } catch (err) {
+    log.warn("Failed to initialize task store", { error: String(err) })
+  }
+
   let api: OpenCodeAPIClient
   let opencodeProcess: OpenCodeProcess | null = null
 
@@ -80,7 +96,24 @@ async function main(): Promise<void> {
 
   const sessionHandler = createSessionHandler(api, logger)
 
-  // Start health probe (only if not standalone)
+  const eventBus = new EventBus()
+
+  const queue = createQueueProcessor(api, taskStore!, eventBus, logger)
+  const cooldown = createCooldownManager(api, queue, config.cooldown.pingIntervalMs, logger)
+  queue.setCooldown(cooldown)
+
+  const pipeline = taskStore ? createPipelineRunner(taskStore, queue, eventBus, api, logger) : null
+  const recurring = taskStore ? createRecurringScheduler(taskStore, queue, eventBus, logger) : null
+
+  const eventBridge = createEventBridgeHandler(broadcast, logger)
+
+  let approvalHandler = null
+  let unattendedHandler = null
+  if (inbox) {
+    approvalHandler = createApprovalHandler(api, inbox, broadcast, logger)
+    unattendedHandler = createUnattendedHandler(inbox, broadcast, logger)
+  }
+
   let healthProbe: HealthProbeScheduler | null = null
   if (!standalone && opencodeProcess) {
     healthProbe = new HealthProbeScheduler(api, config.opencode.healthIntervalMs, logger, {
@@ -90,11 +123,59 @@ async function main(): Promise<void> {
     healthProbe.start()
   }
 
-  // Start REST API server
+  eventBus.on("task", (payload: unknown) => {
+    const p = payload as { id: string; status: string; error?: string; pipeline_id?: string; stage?: number }
+    broadcast.broadcastAll({ type: "task_update", data: p })
+    const pending = taskStore ? taskStore.listTasks({ status: "pending" }).then(t => t.length) : Promise.resolve(0)
+    pending.then(count => {
+      broadcast.broadcastAll({
+        type: "queue_status",
+        data: { pending: count, paused: queue.isPaused(), cooldowns: cooldown.getCooldowns() },
+      })
+    }).catch(() => {})
+  })
+
+  eventBus.on("status", (payload: unknown) => {
+    const p = payload as { pipeline?: { id: string; status: string; stage?: number; total?: number } }
+    if (p.pipeline) {
+      broadcast.broadcastAll({ type: "pipeline_update", data: p.pipeline })
+    }
+  })
+
+  const sseEndpoint = new OpenCodeSSEEndpoint(api, logger, {
+    onEvent(event: OpenCodeSSEEvent) {
+      const sessionId = (event.properties?.sessionID as string) ?? "broadcast"
+      eventBridge.handleEvent(sessionId, event)
+
+      if (event.type === "permission.asked" && approvalHandler && inbox) {
+        const perm = event.properties as Record<string, unknown>
+        const sid = (perm.sessionID as string) ?? sessionId
+        const permissionId = (perm.id as string) ?? ""
+        const tool = (perm.tool as string) ?? "unknown"
+        const args = (perm.args as Record<string, unknown>) ?? {}
+        approvalHandler.handlePermissionRequest(sid, tool, args, permissionId).catch((err) => {
+          log.error("Approval handling failed", { error: String(err) })
+        })
+      }
+    },
+  })
+
+  if (!standalone) {
+    sseEndpoint.start().catch((err) => {
+      log.error("SSE endpoint failed to start", { error: String(err) })
+    })
+  }
+
   const restAPI = createRestAPI({
     api,
     inbox,
     conversations,
+    taskStore,
+    queue,
+    cooldown,
+    pipeline,
+    recurring,
+    events: eventBus,
     broadcast,
     logger,
     standalone,
@@ -108,7 +189,6 @@ async function main(): Promise<void> {
 
   log.info("REST API server started", { port: config.port, host: config.host })
 
-  // Start WebSocket server on a different port
   const wsPort = config.port + 1
   const guiWs = new GUIWebSocketEndpoint({
     port: wsPort,
@@ -131,7 +211,11 @@ async function main(): Promise<void> {
       },
       onMessage: (_ws, sessionId, msg) => {
         log.info("GUI message received", { sessionId, type: msg.type })
-        // TODO: Route messages to session handler
+        if (msg.type === "approval" && approvalHandler) {
+          approvalHandler.handleGUIApproval(sessionId, msg.decision).catch((err) => {
+            log.error("GUI approval failed", { error: String(err) })
+          })
+        }
       },
       onDisconnect: (sessionId) => {
         broadcast.unregister(sessionId)
@@ -143,9 +227,25 @@ async function main(): Promise<void> {
 
   log.info("WebSocket server started", { port: wsPort })
 
+  if (taskStore) {
+    queue.recoverStaleRunning().catch((err) => {
+      log.error("Queue recovery failed", { error: String(err) })
+    })
+    pipeline?.init()
+    recurring?.start()
+    queue.run().catch((err) => {
+      log.error("Queue processor stopped", { error: String(err) })
+    })
+    log.info("Task queue, pipeline runner, and recurring scheduler started")
+  }
+
   const shutdown = async (signal: string) => {
     log.info("Shutting down", { signal })
     healthProbe?.stop()
+    sseEndpoint.stop()
+    cooldown.stop()
+    queue.stop()
+    recurring?.stop()
     guiWs.stop()
     server.close()
     if (opencodeProcess) {
@@ -162,6 +262,7 @@ async function main(): Promise<void> {
     wsPort,
     opencodePort: config.opencode.port,
     standalone,
+    taskQueue: !!taskStore,
   })
 }
 

@@ -1,4 +1,5 @@
 import { defineConfig } from "tsup"
+import { cpSync } from "fs"
 
 export default defineConfig({
   entry: ["src/daemon.ts"],
@@ -13,4 +14,7 @@ export default defineConfig({
   minify: false,
   treeshake: true,
   tsconfig: "tsconfig.json",
+  onSuccess: async () => {
+    cpSync("frontend/dist", "dist/public", { recursive: true })
+  },
 })
