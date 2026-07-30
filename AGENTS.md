@@ -83,13 +83,4 @@ SQLite via sql.js (WASM, file-persisted after every write):
 - `EventBus` bridges internal task events to WebSocket GUI updates
 - Cooldown/queue circular dependency resolved via `queue.setCooldown()` late injection
 
-## Governance
 
-This repo is governed by [`openagents`](../openagents/) — the multi-repo goal coordination system.
-
-- **Manifest**: `../openagents/goal-manifest.yaml`
-- **Role**: AI agent daemon（OpenCode 包装器）
-- **Sub-goal**: 实现任务调度与 Agent 生命周期管理
-- **Dependency**: none
-- **Priority**: medium
-- **Shared rules**: `../openagents/shared/`

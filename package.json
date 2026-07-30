@@ -14,7 +14,8 @@
     "test": "vitest",
     "typecheck": "tsc --noEmit",
     "mcp:connectors": "tsx mcp-servers/connector-server.ts",
-    "mcp:memory": "tsx mcp-servers/memory-server.ts"
+    "mcp:memory": "tsx mcp-servers/memory-server.ts",
+    "dev:dashboard": "cd dashboard && npm run dev"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.12",

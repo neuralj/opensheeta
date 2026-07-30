@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.neuralj.opensheeta</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/bin/node</string>
+        <string>dist/daemon.js</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/travis/Developer/repos/neuralj/opensheeta</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/travis/Developer/repos/neuralj/opensheeta/logs/daemon.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/travis/Developer/repos/neuralj/opensheeta/logs/daemon.log</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>OS_PORT</key>
+        <string>8765</string>
+        <key>OS_HOST</key>
+        <string>127.0.0.1</string>
+        <key>NODE_ENV</key>
+        <string>production</string>
+    </dict>
+</dict>
+</plist>

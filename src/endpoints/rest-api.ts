@@ -13,6 +13,11 @@ import type { CooldownManager } from "@/scheduler/cooldown-manager"
 import type { PipelineRunner } from "@/scheduler/pipeline-runner"
 import type { RecurringScheduler } from "@/scheduler/recurring-scheduler"
 import type { EventBus } from "@/scheduler/event-bus"
+import type { AutomationScheduler, ScheduledTask } from "@/scheduler/automation-scheduler"
+import type { AutomationHandler } from "@/handlers/automation-handler"
+import type { UnattendedHandler } from "@/handlers/unattended-handler"
+import type { PersonaManifest } from "@/types/persona"
+import { validateRequired, validateString, validateNumber, validateEnum, combineResults, sanitizeString } from "@/shared/validation"
 
 export interface RestAPIOptions {
   api: OpenCodeAPIClient
@@ -27,10 +32,14 @@ export interface RestAPIOptions {
   broadcast: GUIBroadcastAdapter
   logger: Logger
   standalone: boolean
+  automationScheduler?: AutomationScheduler
+  automationHandler?: AutomationHandler | null
+  personas?: PersonaManifest[]
+  unattended?: UnattendedHandler | null
 }
 
 export function createRestAPI(opts: RestAPIOptions): Hono {
-  const { api, inbox, conversations, taskStore, queue, cooldown, pipeline, recurring, events, broadcast, logger, standalone } = opts
+  const { api, inbox, conversations, taskStore, queue, cooldown, pipeline, recurring, events, broadcast, logger, standalone, automationScheduler, automationHandler, personas, unattended } = opts
   const log = logger.child({ component: "rest-api" })
   const app = new Hono()
 
@@ -69,6 +78,18 @@ export function createRestAPI(opts: RestAPIOptions): Hono {
   app.post("/v1/sessions", async (c) => {
     try {
       const body = await c.req.json() as { title?: string }
+      
+      // Validate title if provided
+      if (body.title !== undefined) {
+        const validation = combineResults(
+          validateString(body.title, "title", 200)
+        );
+        if (!validation.valid) {
+          return c.json({ error: validation.errors.join(", ") }, 400);
+        }
+        body.title = sanitizeString(body.title);
+      }
+      
       const session = await api.createSession({ title: body.title })
 
       if (conversations) {
@@ -115,6 +136,19 @@ export function createRestAPI(opts: RestAPIOptions): Hono {
   app.post("/v1/sessions/:id/messages", async (c) => {
     try {
       const body = await c.req.json() as { text: string }
+      
+      // Validate required fields
+      const validation = combineResults(
+        validateRequired(body.text, "text"),
+        validateString(body.text, "text", 10000)
+      );
+      if (!validation.valid) {
+        return c.json({ error: validation.errors.join(", ") }, 400);
+      }
+      
+      // Sanitize input
+      body.text = sanitizeString(body.text);
+      
       const message = await api.sendMessage(c.req.param("id"), {
         parts: [{ type: "text", text: body.text }],
       })
@@ -160,6 +194,19 @@ export function createRestAPI(opts: RestAPIOptions): Hono {
       return c.json({ error: "Inbox not available" }, 503)
     }
     const body = await c.req.json() as { resolution: string }
+    
+    // Validate required fields
+    const validation = combineResults(
+      validateRequired(body.resolution, "resolution"),
+      validateString(body.resolution, "resolution", 1000)
+    );
+    if (!validation.valid) {
+      return c.json({ error: validation.errors.join(", ") }, 400);
+    }
+    
+    // Sanitize input
+    body.resolution = sanitizeString(body.resolution);
+    
     const ok = await inbox.resolve(c.req.param("id"), body.resolution)
     if (!ok) {
       return c.json({ ok: false, error: "Already resolved or not found" }, 409)
@@ -204,6 +251,28 @@ export function createRestAPI(opts: RestAPIOptions): Hono {
       on_failure?: string
       max_chain_depth?: number
     }
+    
+    // Validate required fields
+    const validation = combineResults(
+      validateRequired(body.prompt, "prompt"),
+      validateString(body.prompt, "prompt", 10000),
+      validateString(body.directory ?? "", "directory", 500),
+      validateString(body.model ?? "", "model", 100),
+      validateString(body.on_success ?? "", "on_success", 10000),
+      validateString(body.on_failure ?? "", "on_failure", 10000),
+      validateNumber(body.max_chain_depth ?? 10, "max_chain_depth", 0, 100)
+    );
+    if (!validation.valid) {
+      return c.json({ error: validation.errors.join(", ") }, 400);
+    }
+    
+    // Sanitize inputs
+    body.prompt = sanitizeString(body.prompt);
+    if (body.directory) body.directory = sanitizeString(body.directory);
+    if (body.model) body.model = sanitizeString(body.model);
+    if (body.on_success) body.on_success = sanitizeString(body.on_success);
+    if (body.on_failure) body.on_failure = sanitizeString(body.on_failure);
+    
     const task = {
       id: `task_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       directory: body.directory ?? "",
@@ -408,6 +477,86 @@ export function createRestAPI(opts: RestAPIOptions): Hono {
     if (!recurring) return c.json({ error: "Recurring scheduler not available" }, 503)
     await recurring.remove(c.req.param("id"))
     return c.json({ ok: true })
+  })
+
+  // Personas
+  app.get("/v1/personas", async (c) => {
+    return c.json({ personas: personas ?? [] })
+  })
+
+  app.get("/v1/personas/:id", async (c) => {
+    const id = c.req.param("id")
+    const persona = (personas ?? []).find((p) => p.id === id)
+    if (!persona) return c.json({ error: "Not found" }, 404)
+    return c.json(persona)
+  })
+
+  // Automations
+  app.get("/v1/automations", async (c) => {
+    if (!automationScheduler) return c.json({ automations: [] })
+    const tasks = automationScheduler.getTasks()
+    return c.json({ automations: tasks })
+  })
+
+  app.post("/v1/automations", async (c) => {
+    if (!automationScheduler) return c.json({ error: "Automation scheduler not available" }, 503)
+    const body = await c.req.json() as {
+      title: string
+      instructions: string
+      cron: string
+      timezone?: string
+      workspace?: string
+      agent?: string
+    }
+    const task: ScheduledTask = {
+      id: `auto_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      title: body.title,
+      instructions: body.instructions,
+      cron: body.cron,
+      timezone: body.timezone ?? "UTC",
+      workspace: body.workspace ?? "",
+      agent: body.agent ?? "",
+      enabled: true,
+      next_run: null,
+      last_run: null,
+    }
+    automationScheduler.addTask(task)
+    return c.json(task, 201)
+  })
+
+  app.put("/v1/automations/:id", async (c) => {
+    if (!automationScheduler) return c.json({ error: "Automation scheduler not available" }, 503)
+    const id = c.req.param("id")
+    const body = await c.req.json() as Partial<ScheduledTask>
+    const updated = automationScheduler.updateTask(id, body)
+    if (!updated) return c.json({ error: "Not found" }, 404)
+    return c.json(updated)
+  })
+
+  app.delete("/v1/automations/:id", async (c) => {
+    if (!automationScheduler) return c.json({ error: "Automation scheduler not available" }, 503)
+    const ok = automationScheduler.removeTask(c.req.param("id"))
+    if (!ok) return c.json({ error: "Not found" }, 404)
+    return c.json({ ok: true })
+  })
+
+  app.get("/v1/automations/:id/runs", async (c) => {
+    if (!automationHandler) return c.json({ runs: [] })
+    const runs = automationHandler.listRuns(c.req.param("id"))
+    return c.json({ runs })
+  })
+
+  // Unattended mode
+  app.post("/v1/sessions/:id/unattended", async (c) => {
+    if (!unattended) return c.json({ error: "Unattended handler not available" }, 503)
+    const body = await c.req.json() as { unattended: boolean }
+    unattended.setUnattended(c.req.param("id"), body.unattended)
+    return c.json({ ok: true, unattended: body.unattended })
+  })
+
+  app.get("/v1/sessions/:id/unattended", async (c) => {
+    if (!unattended) return c.json({ unattended: false })
+    return c.json({ unattended: unattended.isUnattended(c.req.param("id")) })
   })
 
   const publicDir = existsSync("./public") ? "./public" : "./frontend/dist"

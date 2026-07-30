@@ -1,0 +1,32 @@
+{
+	"/": [],
+	"/api/architecture": [
+		"src/routes/api/architecture/+server.ts"
+	],
+	"/api/context": [
+		"src/routes/api/context/+server.ts"
+	],
+	"/api/health": [
+		"src/routes/api/health/+server.ts"
+	],
+	"/api/memory": [
+		"src/routes/api/memory/+server.ts"
+	],
+	"/api/memory/[id]": [
+		"src/routes/api/memory/[id]/+server.ts"
+	],
+	"/api/services": [
+		"src/routes/api/services/+server.ts"
+	],
+	"/api/state": [
+		"src/routes/api/state/+server.ts"
+	],
+	"/api/timeline": [
+		"src/routes/api/timeline/+server.ts"
+	],
+	"/architecture": [],
+	"/health": [],
+	"/memory": [],
+	"/services": [],
+	"/timeline": []
+}

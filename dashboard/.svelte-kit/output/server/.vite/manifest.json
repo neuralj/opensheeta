@@ -1,0 +1,288 @@
+{
+  ".svelte-kit/generated/server/internal.js": {
+    "file": "internal.js",
+    "name": "internal",
+    "src": ".svelte-kit/generated/server/internal.js",
+    "isEntry": true,
+    "imports": [
+      "_internal.js",
+      "_internal2.js"
+    ]
+  },
+  "_architecture.js": {
+    "file": "chunks/architecture.js",
+    "name": "architecture",
+    "imports": [
+      "_repo.js"
+    ]
+  },
+  "_client.js": {
+    "file": "chunks/client.js",
+    "name": "client",
+    "imports": [
+      "_index-server.js",
+      "_shared.js",
+      "_internal.js",
+      "_internal2.js",
+      "_exports.js"
+    ]
+  },
+  "_env.js": {
+    "file": "chunks/env.js",
+    "name": "env"
+  },
+  "_exports.js": {
+    "file": "chunks/exports.js",
+    "name": "exports",
+    "imports": [
+      "_index-server.js"
+    ]
+  },
+  "_health.js": {
+    "file": "chunks/health.js",
+    "name": "health",
+    "imports": [
+      "_repo.js"
+    ]
+  },
+  "_index-server.js": {
+    "file": "chunks/index-server.js",
+    "name": "index-server"
+  },
+  "_internal.js": {
+    "file": "chunks/internal.js",
+    "name": "internal"
+  },
+  "_internal2.js": {
+    "file": "chunks/internal2.js",
+    "name": "internal",
+    "imports": [
+      "_index-server.js",
+      "_internal.js"
+    ]
+  },
+  "_memory.js": {
+    "file": "chunks/memory.js",
+    "name": "memory",
+    "imports": [
+      "_repo.js"
+    ]
+  },
+  "_repo.js": {
+    "file": "chunks/repo.js",
+    "name": "repo"
+  },
+  "_shared.js": {
+    "file": "chunks/shared.js",
+    "name": "shared"
+  },
+  "_state.js": {
+    "file": "chunks/state.js",
+    "name": "state",
+    "imports": [
+      "_repo.js",
+      "_architecture.js",
+      "_health.js",
+      "_memory.js",
+      "_timeline.js"
+    ]
+  },
+  "_timeline.js": {
+    "file": "chunks/timeline.js",
+    "name": "timeline",
+    "imports": [
+      "_repo.js"
+    ]
+  },
+  "_utils.js": {
+    "file": "chunks/utils.js",
+    "name": "utils",
+    "imports": [
+      "_shared.js"
+    ]
+  },
+  "node_modules/@sveltejs/kit/src/runtime/app/server/remote/index.js": {
+    "file": "remote-entry.js",
+    "name": "remote-entry",
+    "src": "node_modules/@sveltejs/kit/src/runtime/app/server/remote/index.js",
+    "isEntry": true,
+    "imports": [
+      "_shared.js",
+      "_internal.js",
+      "_utils.js"
+    ]
+  },
+  "node_modules/@sveltejs/kit/src/runtime/components/svelte-5/error.svelte": {
+    "file": "entries/fallbacks/error.svelte.js",
+    "name": "entries/fallbacks/error.svelte",
+    "src": "node_modules/@sveltejs/kit/src/runtime/components/svelte-5/error.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index-server.js",
+      "_client.js"
+    ]
+  },
+  "node_modules/@sveltejs/kit/src/runtime/server/index.js": {
+    "file": "index.js",
+    "name": "index",
+    "src": "node_modules/@sveltejs/kit/src/runtime/server/index.js",
+    "isEntry": true,
+    "imports": [
+      "_index-server.js",
+      "_shared.js",
+      "_internal.js",
+      "_utils.js",
+      "_internal2.js",
+      "_exports.js",
+      "_env.js"
+    ]
+  },
+  "src/routes/+layout.svelte": {
+    "file": "entries/pages/_layout.svelte.js",
+    "name": "entries/pages/_layout.svelte",
+    "src": "src/routes/+layout.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index-server.js",
+      "_client.js"
+    ],
+    "css": [
+      "_app/immutable/assets/_layout.AC4cA2xC.css"
+    ]
+  },
+  "src/routes/+page.svelte": {
+    "file": "entries/pages/_page.svelte.js",
+    "name": "entries/pages/_page.svelte",
+    "src": "src/routes/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index-server.js"
+    ]
+  },
+  "src/routes/api/architecture/+server.ts": {
+    "file": "entries/endpoints/api/architecture/_server.ts.js",
+    "name": "entries/endpoints/api/architecture/_server.ts",
+    "src": "src/routes/api/architecture/+server.ts",
+    "isEntry": true,
+    "imports": [
+      "_architecture.js"
+    ]
+  },
+  "src/routes/api/context/+server.ts": {
+    "file": "entries/endpoints/api/context/_server.ts.js",
+    "name": "entries/endpoints/api/context/_server.ts",
+    "src": "src/routes/api/context/+server.ts",
+    "isEntry": true,
+    "imports": [
+      "_state.js"
+    ]
+  },
+  "src/routes/api/health/+server.ts": {
+    "file": "entries/endpoints/api/health/_server.ts.js",
+    "name": "entries/endpoints/api/health/_server.ts",
+    "src": "src/routes/api/health/+server.ts",
+    "isEntry": true,
+    "imports": [
+      "_health.js"
+    ]
+  },
+  "src/routes/api/memory/+server.ts": {
+    "file": "entries/endpoints/api/memory/_server.ts.js",
+    "name": "entries/endpoints/api/memory/_server.ts",
+    "src": "src/routes/api/memory/+server.ts",
+    "isEntry": true,
+    "imports": [
+      "_memory.js"
+    ]
+  },
+  "src/routes/api/memory/[id]/+server.ts": {
+    "file": "entries/endpoints/api/memory/_id_/_server.ts.js",
+    "name": "entries/endpoints/api/memory/_id_/_server.ts",
+    "src": "src/routes/api/memory/[id]/+server.ts",
+    "isEntry": true,
+    "imports": [
+      "_memory.js"
+    ]
+  },
+  "src/routes/api/services/+server.ts": {
+    "file": "entries/endpoints/api/services/_server.ts.js",
+    "name": "entries/endpoints/api/services/_server.ts",
+    "src": "src/routes/api/services/+server.ts",
+    "isEntry": true,
+    "imports": [
+      "_repo.js"
+    ]
+  },
+  "src/routes/api/state/+server.ts": {
+    "file": "entries/endpoints/api/state/_server.ts.js",
+    "name": "entries/endpoints/api/state/_server.ts",
+    "src": "src/routes/api/state/+server.ts",
+    "isEntry": true,
+    "imports": [
+      "_state.js"
+    ]
+  },
+  "src/routes/api/timeline/+server.ts": {
+    "file": "entries/endpoints/api/timeline/_server.ts.js",
+    "name": "entries/endpoints/api/timeline/_server.ts",
+    "src": "src/routes/api/timeline/+server.ts",
+    "isEntry": true,
+    "imports": [
+      "_timeline.js"
+    ]
+  },
+  "src/routes/architecture/+page.svelte": {
+    "file": "entries/pages/architecture/_page.svelte.js",
+    "name": "entries/pages/architecture/_page.svelte",
+    "src": "src/routes/architecture/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index-server.js"
+    ]
+  },
+  "src/routes/health/+page.svelte": {
+    "file": "entries/pages/health/_page.svelte.js",
+    "name": "entries/pages/health/_page.svelte",
+    "src": "src/routes/health/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index-server.js"
+    ]
+  },
+  "src/routes/memory/+page.svelte": {
+    "file": "entries/pages/memory/_page.svelte.js",
+    "name": "entries/pages/memory/_page.svelte",
+    "src": "src/routes/memory/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index-server.js"
+    ]
+  },
+  "src/routes/services/+page.svelte": {
+    "file": "entries/pages/services/_page.svelte.js",
+    "name": "entries/pages/services/_page.svelte",
+    "src": "src/routes/services/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index-server.js"
+    ]
+  },
+  "src/routes/timeline/+page.svelte": {
+    "file": "entries/pages/timeline/_page.svelte.js",
+    "name": "entries/pages/timeline/_page.svelte",
+    "src": "src/routes/timeline/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index-server.js"
+    ]
+  },
+  "virtual:__sveltekit/env": {
+    "file": "env.js",
+    "name": "env",
+    "src": "virtual:__sveltekit/env",
+    "isEntry": true,
+    "imports": [
+      "_env.js"
+    ]
+  }
+}

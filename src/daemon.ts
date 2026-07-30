@@ -22,6 +22,9 @@ import { OpenCodeSSEEndpoint } from "@/endpoints/opencode-sse"
 import { createEventBridgeHandler } from "@/handlers/event-bridge-handler"
 import { createApprovalHandler } from "@/handlers/approval-handler"
 import { createUnattendedHandler } from "@/handlers/unattended-handler"
+import { createAutomationHandler } from "@/handlers/automation-handler"
+import { AutomationScheduler } from "@/scheduler/automation-scheduler"
+import { createPersonaHandler } from "@/handlers/persona-handler"
 import type { OpenCodeSSEEvent } from "@/types/opencode"
 
 process.on("uncaughtException", (err) => {
@@ -114,6 +117,18 @@ async function main(): Promise<void> {
     unattendedHandler = createUnattendedHandler(inbox, broadcast, logger)
   }
 
+  const automationHandler = conversations
+    ? createAutomationHandler(api, conversations, logger)
+    : null
+  const automationScheduler = new AutomationScheduler(
+    config.automation.tickIntervalMs,
+    logger,
+    automationHandler ?? { executeTask: async () => {} },
+  )
+
+  const personaHandler = createPersonaHandler(logger)
+  const personas = personaHandler.loadPersonas("./personas")
+
   let healthProbe: HealthProbeScheduler | null = null
   if (!standalone && opencodeProcess) {
     healthProbe = new HealthProbeScheduler(api, config.opencode.healthIntervalMs, logger, {
@@ -179,6 +194,10 @@ async function main(): Promise<void> {
     broadcast,
     logger,
     standalone,
+    automationScheduler,
+    automationHandler,
+    personas,
+    unattended: unattendedHandler,
   })
 
   const server = serve({
@@ -211,10 +230,79 @@ async function main(): Promise<void> {
       },
       onMessage: (_ws, sessionId, msg) => {
         log.info("GUI message received", { sessionId, type: msg.type })
-        if (msg.type === "approval" && approvalHandler) {
-          approvalHandler.handleGUIApproval(sessionId, msg.decision).catch((err) => {
-            log.error("GUI approval failed", { error: String(err) })
-          })
+        switch (msg.type) {
+          case "approval":
+            if (approvalHandler) {
+              approvalHandler.handleGUIApproval(sessionId, msg.decision).catch((err) => {
+                log.error("GUI approval failed", { error: String(err) })
+              })
+            }
+            break
+          case "user_message": {
+            const sendOpts: Record<string, unknown> = {
+              parts: [{ type: "text", text: msg.text }],
+            }
+            if (msg.model) {
+              const parts = msg.model.split("/")
+              sendOpts.model = parts.length === 2
+                ? { providerID: parts[0], modelID: parts[1] }
+                : { providerID: "", modelID: msg.model }
+            }
+            api.sendMessage(sessionId, sendOpts as Parameters<typeof api.sendMessage>[1]).catch((err) => {
+              log.error("Failed to send message", { error: String(err) })
+            })
+            break
+          }
+          case "interrupt":
+            api.abortSession(sessionId).catch((err) => {
+              log.error("Failed to interrupt", { error: String(err) })
+            })
+            break
+          case "retry":
+            api.getMessages(sessionId).then((msgs) => {
+              const lastUser = [...msgs].reverse().find((m) => m.role === "user")
+              if (lastUser) {
+                api.sendMessage(sessionId, { parts: lastUser.parts as Array<{ type: string; text: string }> }).catch((err) => {
+                  log.error("Retry failed", { error: String(err) })
+                })
+              }
+            }).catch((err) => {
+              log.error("Failed to get messages for retry", { error: String(err) })
+            })
+            break
+          case "set_model":
+            api.updateConfig({ model: { providerID: "", modelID: msg.model } }).then(() => {
+              broadcast.broadcast(sessionId, { type: "model_changed", data: { model: msg.model, text: `Model set to ${msg.model}` } })
+            }).catch((err) => {
+              log.error("Failed to set model", { error: String(err) })
+            })
+            break
+          case "set_mode":
+            log.info("Mode change requested", { sessionId, mode: msg.mode })
+            break
+          case "directory_response":
+          case "plan_response":
+          case "question_response": {
+            if (inbox) {
+              inbox.listPending(sessionId).then((items) => {
+                const kind = msg.type === "directory_response" ? "directory"
+                  : msg.type === "plan_response" ? "plan"
+                  : "question"
+                const item = items.find((i) => i.kind === kind)
+                if (item) {
+                  const resolution = msg.type === "directory_response"
+                    ? JSON.stringify({ granted: msg.granted, path: msg.path, writable: msg.writable })
+                    : msg.type === "plan_response"
+                    ? JSON.stringify({ approved: msg.approved, mode: msg.mode, feedback: msg.feedback })
+                    : msg.answer
+                  inbox.resolve(item.id, resolution)
+                }
+              }).catch((err) => {
+                log.error("Failed to resolve inbox item", { error: String(err) })
+              })
+            }
+            break
+          }
         }
       },
       onDisconnect: (sessionId) => {
@@ -233,10 +321,11 @@ async function main(): Promise<void> {
     })
     pipeline?.init()
     recurring?.start()
+    automationScheduler.start()
     queue.run().catch((err) => {
       log.error("Queue processor stopped", { error: String(err) })
     })
-    log.info("Task queue, pipeline runner, and recurring scheduler started")
+    log.info("Task queue, pipeline runner, recurring scheduler, and automation scheduler started")
   }
 
   const shutdown = async (signal: string) => {
@@ -246,6 +335,7 @@ async function main(): Promise<void> {
     cooldown.stop()
     queue.stop()
     recurring?.stop()
+    automationScheduler.stop()
     guiWs.stop()
     server.close()
     if (opencodeProcess) {

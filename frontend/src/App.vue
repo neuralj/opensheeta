@@ -4,6 +4,7 @@
       <div class="header-brand">
         <el-icon :size="24"><Monitor /></el-icon>
         <span class="brand-name">opensheeta</span>
+        <ConnectionBadge :connected="healthStore.wsConnected" class="header-connection" />
       </div>
       <el-menu
         :default-active="activeMenu"
@@ -12,10 +13,18 @@
         class="header-menu"
       >
         <el-menu-item index="/">Dashboard</el-menu-item>
+        <el-menu-item index="/sessions">Sessions</el-menu-item>
         <el-menu-item index="/tasks">Tasks</el-menu-item>
         <el-menu-item index="/pipelines">Pipelines</el-menu-item>
         <el-menu-item index="/recurring">Recurring</el-menu-item>
+        <el-menu-item index="/automations">Automations</el-menu-item>
         <el-menu-item index="/queue">Queue</el-menu-item>
+        <el-menu-item index="/inbox">
+          Inbox
+          <el-badge v-if="inboxStore.pendingCount > 0" :value="inboxStore.pendingCount" type="primary" class="inbox-badge">
+          </el-badge>
+        </el-menu-item>
+        <el-menu-item index="/agents">Agents</el-menu-item>
       </el-menu>
     </el-header>
     <el-main class="app-main">
@@ -25,11 +34,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue"
+import { computed, onMounted } from "vue"
 import { useRoute } from "vue-router"
+import { useHealthStore } from "./stores/health"
+import { useInboxStore } from "./stores/inbox"
+import ConnectionBadge from "./components/ConnectionBadge.vue"
 
 const route = useRoute()
+const healthStore = useHealthStore()
+const inboxStore = useInboxStore()
+
 const activeMenu = computed(() => route.path)
+
+onMounted(() => {
+  healthStore.fetchHealth()
+  inboxStore.fetchInbox()
+})
 </script>
 
 <style>
@@ -73,6 +93,7 @@ body {
   align-items: center;
   gap: 12px;
   color: var(--brand-primary);
+  flex-shrink: 0;
 }
 
 .brand-name {
@@ -81,18 +102,27 @@ body {
   letter-spacing: -0.5px;
 }
 
+.header-connection {
+  margin-left: 4px;
+}
+
 .header-menu {
   border-bottom: none !important;
 }
 
 .header-menu .el-menu-item {
   border-radius: 8px;
-  margin: 0 4px;
+  margin: 0 2px;
+  position: relative;
 }
 
 .header-menu .el-menu-item.is-active {
   background: var(--brand-primary);
   color: white !important;
+}
+
+.inbox-badge {
+  margin-left: 4px;
 }
 
 .app-main {

@@ -61,6 +61,56 @@ export class AutomationScheduler {
     }
   }
 
+  getTasks(): ScheduledTask[] {
+    return this.tasks
+  }
+
+  addTask(task: ScheduledTask): void {
+    this.tasks.push(task)
+    if (task.enabled) {
+      const job = new CronJob(task.cron, { timezone: task.timezone }, () => {
+        this.handler.executeTask(task, "schedule").catch((err) => {
+          this.logger.error("Task execution failed", { taskId: task.id, error: String(err) })
+        })
+      })
+      this.jobs.set(task.id, job)
+    }
+    this.logger.info("Automation task added", { taskId: task.id, title: task.title })
+  }
+
+  updateTask(id: string, patch: Partial<ScheduledTask>): ScheduledTask | null {
+    const idx = this.tasks.findIndex((t) => t.id === id)
+    if (idx < 0) return null
+    this.tasks[idx] = { ...this.tasks[idx], ...patch }
+    const task = this.tasks[idx]
+    const existingJob = this.jobs.get(id)
+    if (existingJob) {
+      existingJob.stop()
+      this.jobs.delete(id)
+    }
+    if (task.enabled) {
+      const job = new CronJob(task.cron, { timezone: task.timezone }, () => {
+        this.handler.executeTask(task, "schedule").catch((err) => {
+          this.logger.error("Task execution failed", { taskId: task.id, error: String(err) })
+        })
+      })
+      this.jobs.set(id, job)
+    }
+    return task
+  }
+
+  removeTask(id: string): boolean {
+    const idx = this.tasks.findIndex((t) => t.id === id)
+    if (idx < 0) return false
+    this.tasks.splice(idx, 1)
+    const job = this.jobs.get(id)
+    if (job) {
+      job.stop()
+      this.jobs.delete(id)
+    }
+    return true
+  }
+
   private tick(): void {
     const now = Date.now() / 1000
     for (const task of this.tasks) {

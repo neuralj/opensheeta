@@ -1,5 +1,9 @@
 import axios from "axios"
-import type { TaskRecord, PipelineRecord, PipelineStage, RecurringRecord } from "../types"
+import type {
+  TaskRecord, PipelineRecord, PipelineStage, RecurringRecord,
+  Session, Message, InboxItem, PersonaManifest, ScheduledTask,
+  AutomationRun, AgentInfo, HealthStatus,
+} from "../types"
 
 const api = axios.create({
   baseURL: "",
@@ -14,7 +18,7 @@ export interface TaskChainInfo {
 
 export const useAPI = () => {
   return {
-    getHealth: () => api.get<{ status: string; mode: string }>("/health"),
+    getHealth: () => api.get<HealthStatus>("/health"),
 
     getTasks: (status?: string) =>
       api.get<{ tasks: TaskRecord[] }>("/v1/tasks", { params: { status } }),
@@ -60,6 +64,45 @@ export const useAPI = () => {
       api.put<RecurringRecord>(`/v1/recurring/${id}`, data),
     deleteRecurring: (id: string) => api.delete(`/v1/recurring/${id}`),
 
-    getAgents: () => api.get<{ agents: any[] }>("/v1/agents"),
+    getAgents: () => api.get<{ agents: AgentInfo[] }>("/v1/agents"),
+
+    getSessions: () => api.get<{ sessions: Session[] }>("/v1/sessions"),
+    createSession: (data?: { title?: string }) =>
+      api.post<Session>("/v1/sessions", data ?? {}),
+    getSession: (id: string) => api.get<Session>(`/v1/sessions/${id}`),
+    deleteSession: (id: string) => api.delete(`/v1/sessions/${id}`),
+    sendMessage: (id: string, text: string) =>
+      api.post<Message>(`/v1/sessions/${id}/messages`, { text }),
+    getMessages: (id: string) =>
+      api.get<{ messages: Message[] }>(`/v1/sessions/${id}/messages`),
+
+    getInbox: (sessionId?: string) =>
+      api.get<{ items: InboxItem[] }>("/v1/inbox", { params: sessionId ? { session_id: sessionId } : {} }),
+    getInboxItem: (id: string) => api.get<{ item: InboxItem }>(`/v1/inbox/${id}`),
+    resolveInbox: (id: string, resolution: string) =>
+      api.post(`/v1/inbox/${id}/resolve`, { resolution }),
+
+    getPersonas: () => api.get<{ personas: PersonaManifest[] }>("/v1/personas"),
+    getPersona: (id: string) => api.get<PersonaManifest>(`/v1/personas/${id}`),
+
+    getAutomations: () => api.get<{ automations: ScheduledTask[] }>("/v1/automations"),
+    createAutomation: (data: {
+      title: string
+      instructions: string
+      cron: string
+      timezone?: string
+      workspace?: string
+      agent?: string
+    }) => api.post<ScheduledTask>("/v1/automations", data),
+    updateAutomation: (id: string, data: Partial<ScheduledTask>) =>
+      api.put<ScheduledTask>(`/v1/automations/${id}`, data),
+    deleteAutomation: (id: string) => api.delete(`/v1/automations/${id}`),
+    getAutomationRuns: (id: string) =>
+      api.get<{ runs: AutomationRun[] }>(`/v1/automations/${id}/runs`),
+
+    setUnattended: (sessionId: string, unattended: boolean) =>
+      api.post(`/v1/sessions/${sessionId}/unattended`, { unattended }),
+    getUnattended: (sessionId: string) =>
+      api.get<{ unattended: boolean }>(`/v1/sessions/${sessionId}/unattended`),
   }
 }
