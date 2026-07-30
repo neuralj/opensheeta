@@ -1,4 +1,4 @@
-import { d as unsubscribe_stores, f as getContext, h as escape_html, i as attr_class, l as store_get, m as attr, s as ensure_array_like } from "../../chunks/index-server.js";
+import { d as unsubscribe_stores, g as escape_html, h as attr, i as attr_class, l as store_get, p as getContext, s as ensure_array_like } from "../../chunks/index-server.js";
 import "../../chunks/client.js";
 //#region node_modules/@sveltejs/kit/src/runtime/app/stores.js
 /**
@@ -39,6 +39,11 @@ function Sidebar($$renderer, $$props) {
 				href: "/",
 				label: "Overview",
 				icon: "◉"
+			},
+			{
+				href: "/browse",
+				label: "Files",
+				icon: "📁"
 			},
 			{
 				href: "/architecture",

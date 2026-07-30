@@ -1,4 +1,4 @@
-import { h as escape_html, i as attr_class, o as derived } from "../../../chunks/index-server.js";
+import { g as escape_html, i as attr_class, o as derived } from "../../../chunks/index-server.js";
 //#region src/routes/timeline/+page.svelte
 function _page($$renderer, $$props) {
 	$$renderer.component(($$renderer) => {

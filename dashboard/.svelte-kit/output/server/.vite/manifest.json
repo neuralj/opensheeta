@@ -147,7 +147,7 @@
       "_client.js"
     ],
     "css": [
-      "_app/immutable/assets/_layout.AC4cA2xC.css"
+      "_app/immutable/assets/_layout.W3RWxA1C.css"
     ]
   },
   "src/routes/+page.svelte": {
@@ -168,6 +168,15 @@
       "_architecture.js"
     ]
   },
+  "src/routes/api/churn/+server.ts": {
+    "file": "entries/endpoints/api/churn/_server.ts.js",
+    "name": "entries/endpoints/api/churn/_server.ts",
+    "src": "src/routes/api/churn/+server.ts",
+    "isEntry": true,
+    "imports": [
+      "_repo.js"
+    ]
+  },
   "src/routes/api/context/+server.ts": {
     "file": "entries/endpoints/api/context/_server.ts.js",
     "name": "entries/endpoints/api/context/_server.ts",
@@ -175,6 +184,24 @@
     "isEntry": true,
     "imports": [
       "_state.js"
+    ]
+  },
+  "src/routes/api/drift/+server.ts": {
+    "file": "entries/endpoints/api/drift/_server.ts.js",
+    "name": "entries/endpoints/api/drift/_server.ts",
+    "src": "src/routes/api/drift/+server.ts",
+    "isEntry": true,
+    "imports": [
+      "_architecture.js"
+    ]
+  },
+  "src/routes/api/files/+server.ts": {
+    "file": "entries/endpoints/api/files/_server.ts.js",
+    "name": "entries/endpoints/api/files/_server.ts",
+    "src": "src/routes/api/files/+server.ts",
+    "isEntry": true,
+    "imports": [
+      "_repo.js"
     ]
   },
   "src/routes/api/health/+server.ts": {
@@ -202,6 +229,15 @@
     "isEntry": true,
     "imports": [
       "_memory.js"
+    ]
+  },
+  "src/routes/api/quality/+server.ts": {
+    "file": "entries/endpoints/api/quality/_server.ts.js",
+    "name": "entries/endpoints/api/quality/_server.ts",
+    "src": "src/routes/api/quality/+server.ts",
+    "isEntry": true,
+    "imports": [
+      "_repo.js"
     ]
   },
   "src/routes/api/services/+server.ts": {
@@ -238,6 +274,21 @@
     "isEntry": true,
     "imports": [
       "_index-server.js"
+    ],
+    "css": [
+      "_app/immutable/assets/_page.BOOEOVac.css"
+    ]
+  },
+  "src/routes/browse/+page.svelte": {
+    "file": "entries/pages/browse/_page.svelte.js",
+    "name": "entries/pages/browse/_page.svelte",
+    "src": "src/routes/browse/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index-server.js"
+    ],
+    "css": [
+      "_app/immutable/assets/_page.C8cSSLm_.css"
     ]
   },
   "src/routes/health/+page.svelte": {

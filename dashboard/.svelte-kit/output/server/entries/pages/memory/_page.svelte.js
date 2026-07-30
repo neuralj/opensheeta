@@ -1,4 +1,4 @@
-import { h as escape_html, i as attr_class, m as attr, s as ensure_array_like } from "../../../chunks/index-server.js";
+import { g as escape_html, h as attr, i as attr_class, s as ensure_array_like } from "../../../chunks/index-server.js";
 //#region src/routes/memory/+page.svelte
 function _page($$renderer, $$props) {
 	$$renderer.component(($$renderer) => {

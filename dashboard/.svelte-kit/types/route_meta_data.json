@@ -3,8 +3,17 @@
 	"/api/architecture": [
 		"src/routes/api/architecture/+server.ts"
 	],
+	"/api/churn": [
+		"src/routes/api/churn/+server.ts"
+	],
 	"/api/context": [
 		"src/routes/api/context/+server.ts"
+	],
+	"/api/drift": [
+		"src/routes/api/drift/+server.ts"
+	],
+	"/api/files": [
+		"src/routes/api/files/+server.ts"
 	],
 	"/api/health": [
 		"src/routes/api/health/+server.ts"
@@ -14,6 +23,9 @@
 	],
 	"/api/memory/[id]": [
 		"src/routes/api/memory/[id]/+server.ts"
+	],
+	"/api/quality": [
+		"src/routes/api/quality/+server.ts"
 	],
 	"/api/services": [
 		"src/routes/api/services/+server.ts"
@@ -25,6 +37,7 @@
 		"src/routes/api/timeline/+server.ts"
 	],
 	"/architecture": [],
+	"/browse": [],
 	"/health": [],
 	"/memory": [],
 	"/services": [],

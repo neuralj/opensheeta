@@ -153,6 +153,65 @@ function generateMermaidGraph(files, layerDeps) {
 	for (const [layer, color] of Object.entries(layerColors)) lines.push(`    classDef layer_${layer} fill:${color}22,stroke:${color},color:${color}`);
 	return lines.join("\n");
 }
+function generateOverviewGraph() {
+	const lines = ["graph LR"];
+	lines.push("    Entry[\"daemon.ts<br/>Entry Point\"]");
+	lines.push("");
+	lines.push("    subgraph Endpoints[\"Endpoints · 4 files\"]");
+	lines.push("        REST[\"REST API\"]");
+	lines.push("        WS[\"WebSocket\"]");
+	lines.push("        SSE[\"SSE Events\"]");
+	lines.push("        InboxREST[\"Inbox REST\"]");
+	lines.push("    end");
+	lines.push("");
+	lines.push("    subgraph Handlers[\"Handlers · 6 files\"]");
+	lines.push("        Session[\"Session\"]");
+	lines.push("        Approval[\"Approval\"]");
+	lines.push("        EventBridge[\"Event Bridge\"]");
+	lines.push("        Persona[\"Persona\"]");
+	lines.push("        Unattended[\"Unattended\"]");
+	lines.push("        Automation[\"Automation\"]");
+	lines.push("    end");
+	lines.push("");
+	lines.push("    subgraph Scheduler[\"Scheduler · 7 files\"]");
+	lines.push("        Queue[\"Queue Processor\"]");
+	lines.push("        Cooldown[\"Cooldown Manager\"]");
+	lines.push("        Pipeline[\"Pipeline Runner\"]");
+	lines.push("        Recurring[\"Recurring Scheduler\"]");
+	lines.push("        EventBus[\"Event Bus\"]");
+	lines.push("        HealthProbe[\"Health Probe\"]");
+	lines.push("    end");
+	lines.push("");
+	lines.push("    subgraph Adapters[\"Adapters · 10 files\"]");
+	lines.push("        OpenCode[\"OpenCode API\"]");
+	lines.push("        SQLite[\"SQLite Stores\"]");
+	lines.push("        MCP[\"MCP Servers\"]");
+	lines.push("        GUI[\"GUI Broadcast\"]");
+	lines.push("    end");
+	lines.push("");
+	lines.push("    Entry --> Endpoints");
+	lines.push("    Entry --> Handlers");
+	lines.push("    Entry --> Scheduler");
+	lines.push("");
+	lines.push("    Endpoints --> Handlers");
+	lines.push("    Handlers --> Scheduler");
+	lines.push("    Handlers --> Adapters");
+	lines.push("    Scheduler --> Adapters");
+	lines.push("    Adapters -.->|events| Handlers");
+	lines.push("");
+	lines.push("    classDef entry fill:#f38ba8,stroke:#f38ba8,color:#1e1e2e");
+	lines.push("    classDef endpoint fill:#a6e3a1,stroke:#a6e3a1,color:#1e1e2e");
+	lines.push("    classDef handler fill:#f9e2af,stroke:#f9e2af,color:#1e1e2e");
+	lines.push("    classDef scheduler fill:#89b4fa,stroke:#89b4fa,color:#1e1e2e");
+	lines.push("    classDef adapter fill:#cba6f7,stroke:#cba6f7,color:#1e1e2e");
+	lines.push("");
+	lines.push("    class Entry entry");
+	lines.push("    class REST,WS,SSE,InboxREST endpoint");
+	lines.push("    class Session,Approval,EventBridge,Persona,Unattended,Automation handler");
+	lines.push("    class Queue,Cooldown,Pipeline,Recurring,EventBus,HealthProbe scheduler");
+	lines.push("    class OpenCode,SQLite,MCP,GUI adapter");
+	return lines.join("\n");
+}
 function analyzeArchitecture() {
 	if (architectureCache && Date.now() - architectureCache.timestamp < CACHE_TTL) return architectureCache.result;
 	const root = findRepoRoot();
@@ -227,7 +286,8 @@ function analyzeArchitecture() {
 			couplingScore: Math.min(couplingScore, 1),
 			layerViolations
 		},
-		mermaidGraph: generateMermaidGraph(fileNodes, layerDeps)
+		mermaidGraph: generateMermaidGraph(fileNodes, layerDeps),
+		overviewGraph: generateOverviewGraph()
 	};
 	architectureCache = {
 		result,

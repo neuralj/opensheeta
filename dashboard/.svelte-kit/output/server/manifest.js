@@ -10,7 +10,7 @@ return {
 	assets: new Set(["favicon.svg"]),
 	mimeTypes: {".svg":"image/svg+xml"},
 	_: {
-		client: {start:"_app/immutable/entry/start.B3UuJ63C.js",app:"_app/immutable/entry/app.DK0VqQTb.js",imports:["_app/immutable/entry/start.B3UuJ63C.js","_app/immutable/chunks/CdbK5dkV.js","_app/immutable/chunks/Bs94_2Mz.js","_app/immutable/entry/app.DK0VqQTb.js","_app/immutable/chunks/Bs94_2Mz.js","_app/immutable/chunks/HclGiUj8.js","_app/immutable/chunks/xihTtKlq.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:false},
+		client: {start:"_app/immutable/entry/start.DSJJDHC6.js",app:"_app/immutable/entry/app.BWiw17pt.js",imports:["_app/immutable/entry/start.DSJJDHC6.js","_app/immutable/chunks/CpwKoztI.js","_app/immutable/chunks/DPlfsHk4.js","_app/immutable/entry/app.BWiw17pt.js","_app/immutable/chunks/DPlfsHk4.js","_app/immutable/chunks/HclGiUj8.js","_app/immutable/chunks/xihTtKlq.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:false},
 		nodes: [
 			__memo(() => import('./nodes/0.js')),
 			__memo(() => import('./nodes/1.js')),
@@ -19,7 +19,8 @@ return {
 			__memo(() => import('./nodes/4.js')),
 			__memo(() => import('./nodes/5.js')),
 			__memo(() => import('./nodes/6.js')),
-			__memo(() => import('./nodes/7.js'))
+			__memo(() => import('./nodes/7.js')),
+			__memo(() => import('./nodes/8.js'))
 		],
 		remotes: {
 			
@@ -40,11 +41,32 @@ return {
 				endpoint: __memo(() => import('./entries/endpoints/api/architecture/_server.ts.js'))
 			},
 			{
+				id: "/api/churn",
+				pattern: /^\/api\/churn\/?$/,
+				params: [],
+				page: null,
+				endpoint: __memo(() => import('./entries/endpoints/api/churn/_server.ts.js'))
+			},
+			{
 				id: "/api/context",
 				pattern: /^\/api\/context\/?$/,
 				params: [],
 				page: null,
 				endpoint: __memo(() => import('./entries/endpoints/api/context/_server.ts.js'))
+			},
+			{
+				id: "/api/drift",
+				pattern: /^\/api\/drift\/?$/,
+				params: [],
+				page: null,
+				endpoint: __memo(() => import('./entries/endpoints/api/drift/_server.ts.js'))
+			},
+			{
+				id: "/api/files",
+				pattern: /^\/api\/files\/?$/,
+				params: [],
+				page: null,
+				endpoint: __memo(() => import('./entries/endpoints/api/files/_server.ts.js'))
 			},
 			{
 				id: "/api/health",
@@ -66,6 +88,13 @@ return {
 				params: [{"name":"id","optional":false,"rest":false,"chained":false}],
 				page: null,
 				endpoint: __memo(() => import('./entries/endpoints/api/memory/_id_/_server.ts.js'))
+			},
+			{
+				id: "/api/quality",
+				pattern: /^\/api\/quality\/?$/,
+				params: [],
+				page: null,
+				endpoint: __memo(() => import('./entries/endpoints/api/quality/_server.ts.js'))
 			},
 			{
 				id: "/api/services",
@@ -96,31 +125,38 @@ return {
 				endpoint: null
 			},
 			{
+				id: "/browse",
+				pattern: /^\/browse\/?$/,
+				params: [],
+				page: { layouts: [0,], errors: [1,], leaf: 4 },
+				endpoint: null
+			},
+			{
 				id: "/health",
 				pattern: /^\/health\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 4 },
+				page: { layouts: [0,], errors: [1,], leaf: 5 },
 				endpoint: null
 			},
 			{
 				id: "/memory",
 				pattern: /^\/memory\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 5 },
+				page: { layouts: [0,], errors: [1,], leaf: 6 },
 				endpoint: null
 			},
 			{
 				id: "/services",
 				pattern: /^\/services\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 6 },
+				page: { layouts: [0,], errors: [1,], leaf: 7 },
 				endpoint: null
 			},
 			{
 				id: "/timeline",
 				pattern: /^\/timeline\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 7 },
+				page: { layouts: [0,], errors: [1,], leaf: 8 },
 				endpoint: null
 			}
 		],
