@@ -1,12 +1,7 @@
 import { execSync } from 'child_process';
 import { findRepoRoot } from './repo.js';
 import { analyzeArchitecture } from './architecture.js';
-import { analyzeHealth } from './health.js';
-import { listMemory } from './memory.js';
-import { getTimeline } from './timeline.js';
-import { existsSync, readFileSync } from 'fs';
-import { join } from 'path';
-import initSqlJs from 'sql.js';
+import { getCIStatus } from './ci.js';
 
 // Cache for repo state
 let stateCache: { result: RepoState; timestamp: number } | null = null;
@@ -25,21 +20,10 @@ export interface RepoState {
 		layerCounts: Record<string, number>;
 		hotModules: { path: string; changes: number }[];
 	};
-	tasks: {
-		pending: number;
-		running: number;
-		completed: number;
-		failed: number;
+	ci: {
+		latestStatus: 'passing' | 'failing' | 'pending' | 'unknown';
+		totalRuns: number;
 	};
-	health: {
-		score: number;
-		typecheck: string;
-		tests: string;
-		build: string;
-	};
-	recentDecisions: { id: string; title: string; category: string; created_at: number }[];
-	timeline: { id: string; title: string; type: string; status: string; startedAt: number }[];
-	conventions: Record<string, string>;
 }
 
 function getGitInfo(root: string) {
@@ -54,30 +38,6 @@ function getGitInfo(root: string) {
 	}
 }
 
-async function getTaskCounts(root: string): Promise<{ pending: number; running: number; completed: number; failed: number }> {
-	const dbPath = join(root, 'tasks.db');
-	if (!existsSync(dbPath)) return { pending: 0, running: 0, completed: 0, failed: 0 };
-
-	const SQL = await initSqlJs();
-	const buffer = readFileSync(dbPath);
-	const db = new SQL.Database(buffer);
-
-	const counts = { pending: 0, running: 0, completed: 0, failed: 0 };
-	try {
-		for (const status of ['pending', 'running', 'completed', 'failed'] as const) {
-			const stmt = db.prepare('SELECT COUNT(*) as cnt FROM tasks WHERE status = ?');
-			stmt.bind([status]);
-			if (stmt.step()) {
-				counts[status] = (stmt.getAsObject() as Record<string, unknown>).cnt as number;
-			}
-			stmt.free();
-		}
-	} catch {
-		// table might not exist
-	}
-	return counts;
-}
-
 export async function getRepoState(): Promise<RepoState> {
 	// Check cache first
 	if (stateCache && Date.now() - stateCache.timestamp < CACHE_TTL) {
@@ -87,10 +47,7 @@ export async function getRepoState(): Promise<RepoState> {
 	const root = findRepoRoot();
 	const gitInfo = getGitInfo(root);
 	const arch = analyzeArchitecture();
-	const health = analyzeHealth();
-	const memories = await listMemory();
-	const timeline = await getTimeline(10);
-	const taskCounts = await getTaskCounts(root);
+	const ci = await getCIStatus();
 
 	const layerCounts: Record<string, number> = {};
 	for (const layer of arch.layers) {
@@ -110,34 +67,9 @@ export async function getRepoState(): Promise<RepoState> {
 			layerCounts,
 			hotModules: arch.hotModules.slice(0, 5).map((m) => ({ path: m.path, changes: m.changes })),
 		},
-		tasks: taskCounts,
-		health: {
-			score: health.score,
-			typecheck: health.details.typecheck.pass ? 'pass' : `${health.details.typecheck.errors} errors`,
-			tests: `${health.details.tests.passed}/${health.details.tests.total} passed`,
-			build: health.details.build.pass ? 'pass' : 'fail',
-		},
-		recentDecisions: memories.slice(0, 5).map((m) => ({
-			id: m.id,
-			title: m.title,
-			category: m.category,
-			created_at: m.created_at,
-		})),
-		timeline: timeline.entries.slice(0, 5).map((e) => ({
-			id: e.id,
-			title: e.title,
-			type: e.type,
-			status: e.status,
-			startedAt: e.startedAt,
-		})),
-		conventions: {
-			module_system: 'ESM ("type": "module")',
-			target: 'Node 22',
-			framework: 'Hono (REST) + ws (WebSocket)',
-			storage: 'SQLite via sql.js (WASM)',
-			pattern: 'Factory functions (not classes)',
-			path_alias: '@/* → ./src/*',
-			architecture: 'Scheduler + Endpoint → Handler → Adapter',
+		ci: {
+			latestStatus: ci.latestStatus,
+			totalRuns: ci.runs.length,
 		},
 	};
 
@@ -157,18 +89,6 @@ export async function getContextSnapshot() {
 			total_files: state.architecture.totalFiles,
 			hot_modules: state.architecture.hotModules.map((m) => m.path),
 		},
-		current_state: {
-			open_tasks: state.tasks.pending,
-			running_tasks: state.tasks.running,
-			failed_tasks: state.tasks.failed,
-		},
-		health: {
-			typecheck: state.health.typecheck,
-			tests: state.health.tests,
-			build: state.health.build,
-			score: state.health.score,
-		},
-		recent_decisions: state.recentDecisions,
-		conventions: state.conventions,
+		ci: state.ci,
 	};
 }

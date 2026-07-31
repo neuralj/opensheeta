@@ -10,17 +10,13 @@ return {
 	assets: new Set(["favicon.svg"]),
 	mimeTypes: {".svg":"image/svg+xml"},
 	_: {
-		client: {start:"_app/immutable/entry/start.DSJJDHC6.js",app:"_app/immutable/entry/app.BWiw17pt.js",imports:["_app/immutable/entry/start.DSJJDHC6.js","_app/immutable/chunks/CpwKoztI.js","_app/immutable/chunks/DPlfsHk4.js","_app/immutable/entry/app.BWiw17pt.js","_app/immutable/chunks/DPlfsHk4.js","_app/immutable/chunks/HclGiUj8.js","_app/immutable/chunks/xihTtKlq.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:false},
+		client: {start:"_app/immutable/entry/start.Bm1WMt17.js",app:"_app/immutable/entry/app.CNExc2rE.js",imports:["_app/immutable/entry/start.Bm1WMt17.js","_app/immutable/chunks/BZZjnHtX.js","_app/immutable/chunks/-PF2xQ_t.js","_app/immutable/entry/app.CNExc2rE.js","_app/immutable/chunks/-PF2xQ_t.js","_app/immutable/chunks/HclGiUj8.js","_app/immutable/chunks/xihTtKlq.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:false},
 		nodes: [
 			__memo(() => import('./nodes/0.js')),
 			__memo(() => import('./nodes/1.js')),
 			__memo(() => import('./nodes/2.js')),
 			__memo(() => import('./nodes/3.js')),
-			__memo(() => import('./nodes/4.js')),
-			__memo(() => import('./nodes/5.js')),
-			__memo(() => import('./nodes/6.js')),
-			__memo(() => import('./nodes/7.js')),
-			__memo(() => import('./nodes/8.js'))
+			__memo(() => import('./nodes/4.js'))
 		],
 		remotes: {
 			
@@ -41,25 +37,11 @@ return {
 				endpoint: __memo(() => import('./entries/endpoints/api/architecture/_server.ts.js'))
 			},
 			{
-				id: "/api/churn",
-				pattern: /^\/api\/churn\/?$/,
-				params: [],
-				page: null,
-				endpoint: __memo(() => import('./entries/endpoints/api/churn/_server.ts.js'))
-			},
-			{
 				id: "/api/context",
 				pattern: /^\/api\/context\/?$/,
 				params: [],
 				page: null,
 				endpoint: __memo(() => import('./entries/endpoints/api/context/_server.ts.js'))
-			},
-			{
-				id: "/api/drift",
-				pattern: /^\/api\/drift\/?$/,
-				params: [],
-				page: null,
-				endpoint: __memo(() => import('./entries/endpoints/api/drift/_server.ts.js'))
 			},
 			{
 				id: "/api/files",
@@ -69,53 +51,11 @@ return {
 				endpoint: __memo(() => import('./entries/endpoints/api/files/_server.ts.js'))
 			},
 			{
-				id: "/api/health",
-				pattern: /^\/api\/health\/?$/,
-				params: [],
-				page: null,
-				endpoint: __memo(() => import('./entries/endpoints/api/health/_server.ts.js'))
-			},
-			{
-				id: "/api/memory",
-				pattern: /^\/api\/memory\/?$/,
-				params: [],
-				page: null,
-				endpoint: __memo(() => import('./entries/endpoints/api/memory/_server.ts.js'))
-			},
-			{
-				id: "/api/memory/[id]",
-				pattern: /^\/api\/memory\/([^/]+?)\/?$/,
-				params: [{"name":"id","optional":false,"rest":false,"chained":false}],
-				page: null,
-				endpoint: __memo(() => import('./entries/endpoints/api/memory/_id_/_server.ts.js'))
-			},
-			{
-				id: "/api/quality",
-				pattern: /^\/api\/quality\/?$/,
-				params: [],
-				page: null,
-				endpoint: __memo(() => import('./entries/endpoints/api/quality/_server.ts.js'))
-			},
-			{
-				id: "/api/services",
-				pattern: /^\/api\/services\/?$/,
-				params: [],
-				page: null,
-				endpoint: __memo(() => import('./entries/endpoints/api/services/_server.ts.js'))
-			},
-			{
 				id: "/api/state",
 				pattern: /^\/api\/state\/?$/,
 				params: [],
 				page: null,
 				endpoint: __memo(() => import('./entries/endpoints/api/state/_server.ts.js'))
-			},
-			{
-				id: "/api/timeline",
-				pattern: /^\/api\/timeline\/?$/,
-				params: [],
-				page: null,
-				endpoint: __memo(() => import('./entries/endpoints/api/timeline/_server.ts.js'))
 			},
 			{
 				id: "/architecture",
@@ -129,34 +69,6 @@ return {
 				pattern: /^\/browse\/?$/,
 				params: [],
 				page: { layouts: [0,], errors: [1,], leaf: 4 },
-				endpoint: null
-			},
-			{
-				id: "/health",
-				pattern: /^\/health\/?$/,
-				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 5 },
-				endpoint: null
-			},
-			{
-				id: "/memory",
-				pattern: /^\/memory\/?$/,
-				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 6 },
-				endpoint: null
-			},
-			{
-				id: "/services",
-				pattern: /^\/services\/?$/,
-				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 7 },
-				endpoint: null
-			},
-			{
-				id: "/timeline",
-				pattern: /^\/timeline\/?$/,
-				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 8 },
 				endpoint: null
 			}
 		],

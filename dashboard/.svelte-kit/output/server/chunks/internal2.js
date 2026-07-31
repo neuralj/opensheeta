@@ -1,4 +1,4 @@
-import { A as init_operations, B as hydrating, C as set_active_effect, D as create_text, E as clear_text_content, F as component_context, H as set_hydrating, I as pop, J as LEGACY_PROPS, K as HYDRATION_ERROR, L as push, M as set, N as flushSync, O as get_first_child, P as boundary, R as async_mode_flag, S as get, T as component_root, U as hydration_mismatch, V as set_hydrate_node, X as array_from, Z as define_property, _ as is_passive_event, b as active_effect, c as render, j as mutable_source, k as get_next_sibling, m as setContext, o as derived, q as hydration_failed, w as set_active_reaction, x as active_reaction, z as hydrate_node } from "./index-server.js";
+import { A as mutable_source, B as set_hydrate_node, C as set_active_reaction, D as get_first_child, E as create_text, F as pop, G as HYDRATION_ERROR, H as hydration_mismatch, I as push, K as hydration_failed, L as async_mode_flag, M as flushSync, N as boundary, O as get_next_sibling, P as component_context, R as hydrate_node, S as set_active_effect, T as clear_text_content, V as set_hydrating, X as define_property, Y as array_from, a as derived, b as active_reaction, g as is_passive_event, j as set, k as init_operations, p as setContext, q as LEGACY_PROPS, s as render, w as component_root, x as get, y as active_effect, z as hydrating } from "./index-server.js";
 import "./internal.js";
 /**
 * `$env/dynamic/public`
@@ -582,7 +582,7 @@ var options = {
 		app: ({ head, body, assets, nonce, env }) => "<!doctype html>\n<html lang=\"en\" class=\"dark\">\n	<head>\n		<meta charset=\"utf-8\" />\n		<link rel=\"icon\" href=\"" + assets + "/favicon.svg\" />\n		<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n		<title>opensheeta — Living Repository</title>\n		" + head + "\n	</head>\n	<body data-sveltekit-preload-data=\"hover\">\n		<div style=\"display: contents\">" + body + "</div>\n	</body>\n</html>\n",
 		error: error_template_default
 	},
-	version_hash: "1fpjmpg"
+	version_hash: "1gezo0q"
 };
 async function get_hooks() {
 	let handle;

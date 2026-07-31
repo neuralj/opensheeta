@@ -20,14 +20,23 @@ jobs:
           node-version: '22'
           cache: 'npm'
       
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm ci
+      
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+      
+      - name: Install dashboard dependencies
+        run: cd dashboard && npm ci
+      
+      - name: Build backend
+        run: npm run build:backend
       
       - name: Build frontend
         run: npm run build:frontend
       
-      - name: Build backend
-        run: npm run build:backend
+      - name: Build dashboard
+        run: npm run build:dashboard
       
       - name: Create release tarball
         run: |
@@ -35,6 +44,7 @@ jobs:
           cp -r dist release/
           cp package.json release/
           cp -r frontend/dist release/public
+          cp -r dashboard/build release/dashboard
           tar -czf opensheeta-${{ github.ref_name }}.tar.gz -C release .
       
       - name: Upload release artifact

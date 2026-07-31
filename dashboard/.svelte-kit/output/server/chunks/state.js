@@ -1,12 +1,85 @@
 import { t as findRepoRoot } from "./repo.js";
 import { t as analyzeArchitecture } from "./architecture.js";
-import { t as analyzeHealth } from "./health.js";
-import { i as listMemory } from "./memory.js";
-import { t as getTimeline } from "./timeline.js";
-import { existsSync, readFileSync } from "fs";
-import { join } from "path";
 import { execSync } from "child_process";
-import initSqlJs from "sql.js";
+//#region src/lib/server/ci.ts
+var ciCache = null;
+var CACHE_TTL$1 = 60 * 1e3;
+function getGitHubRepoInfo() {
+	try {
+		const match = execSync("git remote get-url origin", {
+			cwd: findRepoRoot(),
+			encoding: "utf-8"
+		}).trim().match(/github\.com[:/]([^/]+)\/([^/.]+)/);
+		if (match) return {
+			owner: match[1],
+			repo: match[2]
+		};
+	} catch {}
+	return null;
+}
+async function getCIStatus() {
+	if (ciCache && Date.now() - ciCache.timestamp < CACHE_TTL$1) return ciCache.result;
+	const repoInfo = getGitHubRepoInfo();
+	if (!repoInfo) {
+		const result = {
+			runs: [],
+			latestStatus: "unknown"
+		};
+		ciCache = {
+			result,
+			timestamp: Date.now()
+		};
+		return result;
+	}
+	try {
+		const token = process.env.GITHUB_TOKEN;
+		const headers = {
+			"Accept": "application/vnd.github.v3+json",
+			"User-Agent": "opensheeta-dashboard"
+		};
+		if (token) headers["Authorization"] = `Bearer ${token}`;
+		const response = await fetch(`https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}/actions/runs?per_page=10`, { headers });
+		if (!response.ok) throw new Error(`GitHub API error: ${response.status}`);
+		const runs = (await response.json()).workflow_runs.map((run) => ({
+			id: run.id,
+			name: run.name,
+			status: run.status,
+			conclusion: run.conclusion,
+			created_at: run.created_at,
+			updated_at: run.updated_at,
+			head_branch: run.head_branch,
+			head_sha: run.head_sha,
+			html_url: run.html_url,
+			run_number: run.run_number,
+			event: run.event
+		}));
+		const completedRuns = runs.filter((r) => r.status === "completed");
+		let latestStatus = "unknown";
+		if (runs.some((r) => r.status === "in_progress" || r.status === "queued")) latestStatus = "pending";
+		else if (completedRuns.length > 0) latestStatus = completedRuns[0].conclusion === "success" ? "passing" : "failing";
+		const result = {
+			runs,
+			latestStatus
+		};
+		ciCache = {
+			result,
+			timestamp: Date.now()
+		};
+		return result;
+	} catch (error) {
+		console.error("Failed to fetch CI status:", error);
+		const result = {
+			runs: [],
+			latestStatus: "unknown"
+		};
+		ciCache = {
+			result,
+			timestamp: Date.now()
+		};
+		return result;
+	}
+}
+//#endregion
 //#region src/lib/server/state.ts
 var stateCache = null;
 var CACHE_TTL = 60 * 1e3;
@@ -47,47 +120,11 @@ function getGitInfo(root) {
 		};
 	}
 }
-async function getTaskCounts(root) {
-	const dbPath = join(root, "tasks.db");
-	if (!existsSync(dbPath)) return {
-		pending: 0,
-		running: 0,
-		completed: 0,
-		failed: 0
-	};
-	const SQL = await initSqlJs();
-	const buffer = readFileSync(dbPath);
-	const db = new SQL.Database(buffer);
-	const counts = {
-		pending: 0,
-		running: 0,
-		completed: 0,
-		failed: 0
-	};
-	try {
-		for (const status of [
-			"pending",
-			"running",
-			"completed",
-			"failed"
-		]) {
-			const stmt = db.prepare("SELECT COUNT(*) as cnt FROM tasks WHERE status = ?");
-			stmt.bind([status]);
-			if (stmt.step()) counts[status] = stmt.getAsObject().cnt;
-			stmt.free();
-		}
-	} catch {}
-	return counts;
-}
 async function getRepoState() {
 	if (stateCache && Date.now() - stateCache.timestamp < CACHE_TTL) return stateCache.result;
-	const root = findRepoRoot();
-	const gitInfo = getGitInfo(root);
+	const gitInfo = getGitInfo(findRepoRoot());
 	const arch = analyzeArchitecture();
-	const health = analyzeHealth();
-	const memories = await listMemory();
-	const timeline = await getTimeline(10);
-	const taskCounts = await getTaskCounts(root);
+	const ci = await getCIStatus();
 	const layerCounts = {};
 	for (const layer of arch.layers) layerCounts[layer.name] = layer.files.length;
 	const result = {
@@ -106,34 +143,9 @@ async function getRepoState() {
 				changes: m.changes
 			}))
 		},
-		tasks: taskCounts,
-		health: {
-			score: health.score,
-			typecheck: health.details.typecheck.pass ? "pass" : `${health.details.typecheck.errors} errors`,
-			tests: `${health.details.tests.passed}/${health.details.tests.total} passed`,
-			build: health.details.build.pass ? "pass" : "fail"
-		},
-		recentDecisions: memories.slice(0, 5).map((m) => ({
-			id: m.id,
-			title: m.title,
-			category: m.category,
-			created_at: m.created_at
-		})),
-		timeline: timeline.entries.slice(0, 5).map((e) => ({
-			id: e.id,
-			title: e.title,
-			type: e.type,
-			status: e.status,
-			startedAt: e.startedAt
-		})),
-		conventions: {
-			module_system: "ESM (\"type\": \"module\")",
-			target: "Node 22",
-			framework: "Hono (REST) + ws (WebSocket)",
-			storage: "SQLite via sql.js (WASM)",
-			pattern: "Factory functions (not classes)",
-			path_alias: "@/* → ./src/*",
-			architecture: "Scheduler + Endpoint → Handler → Adapter"
+		ci: {
+			latestStatus: ci.latestStatus,
+			totalRuns: ci.runs.length
 		}
 	};
 	stateCache = {
@@ -152,19 +164,7 @@ async function getContextSnapshot() {
 			total_files: state.architecture.totalFiles,
 			hot_modules: state.architecture.hotModules.map((m) => m.path)
 		},
-		current_state: {
-			open_tasks: state.tasks.pending,
-			running_tasks: state.tasks.running,
-			failed_tasks: state.tasks.failed
-		},
-		health: {
-			typecheck: state.health.typecheck,
-			tests: state.health.tests,
-			build: state.health.build,
-			score: state.health.score
-		},
-		recent_decisions: state.recentDecisions,
-		conventions: state.conventions
+		ci: state.ci
 	};
 }
 //#endregion

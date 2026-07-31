@@ -4,11 +4,7 @@
 	const links = [
 		{ href: '/', label: 'Overview', icon: '◉' },
 		{ href: '/browse', label: 'Files', icon: '📁' },
-		{ href: '/architecture', label: 'Architecture', icon: '⬡' },
-		{ href: '/memory', label: 'Memory', icon: '◈' },
-		{ href: '/timeline', label: 'Timeline', icon: '⟳' },
-		{ href: '/health', label: 'Health', icon: '♡' },
-		{ href: '/services', label: 'Services', icon: '⚡' }
+		{ href: '/architecture', label: 'Architecture', icon: '⬡' }
 	];
 </script>
 

@@ -24,7 +24,6 @@
 		other: '#6c7086'
 	};
 
-	// 层级依赖规则：行可以依赖列，列不能依赖行
 	const allowedDeps: Record<string, string[]> = {
 		scheduler: ['handler', 'adapter', 'config', 'types', 'shared'],
 		endpoint: ['handler', 'config', 'types', 'shared'],
@@ -148,7 +147,6 @@
 		return layerColors[layer] || layerColors.other;
 	}
 
-	// 计算反向依赖数
 	function getReverseDepCount(filePath: string): number {
 		if (!result) return 0;
 		return result.files.filter(f => 
@@ -156,13 +154,11 @@
 		).length;
 	}
 
-	// 检查依赖是否违规
 	function isDependencyViolation(fromLayer: string, toLayer: string): boolean {
 		const allowed = allowedDeps[fromLayer] || [];
 		return !allowed.includes(toLayer);
 	}
 
-	// 获取文件浏览器链接
 	function getBrowseLink(relativePath: string): string {
 		return `/browse?path=${encodeURIComponent(relativePath)}`;
 	}
@@ -178,16 +174,16 @@
 		</div>
 		<div class="flex gap-2 items-center">
 			<div class="flex gap-1 bg-card border border-border rounded-lg p-1">
-				<button onclick={zoomOut} class="px-2 py-1 rounded text-sm hover:bg-muted transition-colors" title="缩小">−</button>
+				<button onclick={zoomOut} class="px-2 py-1 rounded text-sm hover:bg-muted transition-colors" title="Zoom out">−</button>
 				<span class="px-2 py-1 text-xs text-muted-foreground min-w-[3rem] text-center">{(zoomLevel * 100).toFixed(0)}%</span>
-				<button onclick={zoomIn} class="px-2 py-1 rounded text-sm hover:bg-muted transition-colors" title="放大">+</button>
-				<button onclick={zoomReset} class="px-2 py-1 rounded text-sm hover:bg-muted transition-colors" title="重置">⟲</button>
+				<button onclick={zoomIn} class="px-2 py-1 rounded text-sm hover:bg-muted transition-colors" title="Zoom in">+</button>
+				<button onclick={zoomReset} class="px-2 py-1 rounded text-sm hover:bg-muted transition-colors" title="Reset">⟲</button>
 			</div>
 			<button onclick={() => showLegend = !showLegend} class="px-3 py-1.5 rounded-lg bg-card border border-border text-sm hover:bg-muted transition-colors">
-				{showLegend ? '隐藏图例' : '显示图例'}
+				{showLegend ? 'Hide legend' : 'Show legend'}
 			</button>
 			<button onclick={load} class="px-3 py-1.5 rounded-lg bg-card border border-border text-sm hover:bg-muted transition-colors">
-				刷新
+				Refresh
 			</button>
 		</div>
 	</div>
@@ -195,14 +191,14 @@
 	{#if loading && !result}
 		<div class="flex items-center justify-center h-64 text-muted-foreground">Analyzing imports...</div>
 	{:else if result}
-		<!-- 模块概览图 -->
+		<!-- Module overview graph -->
 		<div class="bg-card border border-border rounded-xl overflow-hidden">
 			<div id="mermaid-container" class="w-full h-[500px] cursor-grab active:cursor-grabbing"></div>
 		</div>
 
 		{#if showLegend}
 			<div class="bg-card border border-border rounded-xl p-4">
-				<h2 class="text-sm font-semibold text-foreground mb-3">图例 — 架构层次</h2>
+				<h2 class="text-sm font-semibold text-foreground mb-3">Legend — Architecture Layers</h2>
 				<div class="flex flex-wrap gap-4">
 					{#each Object.entries(layerColors) as [layer, color]}
 						{#if layer !== 'other'}
@@ -213,16 +209,16 @@
 						{/if}
 					{/each}
 				</div>
-				<p class="text-xs text-muted-foreground mt-2">提示：鼠标滚轮缩放，拖拽平移</p>
+				<p class="text-xs text-muted-foreground mt-2">Tip: Scroll to zoom, drag to pan</p>
 			</div>
 		{/if}
 
-		<!-- 层级依赖矩阵 + 循环依赖 -->
+		<!-- Layer dependency matrix + Circular dependencies -->
 		<div class="grid grid-cols-2 gap-4">
-			<!-- 层级依赖矩阵 -->
+			<!-- Layer dependency matrix -->
 			<div class="bg-card border border-border rounded-xl p-4">
 				<h2 class="text-sm font-semibold text-foreground mb-3">Layer Dependency Matrix</h2>
-				<p class="text-xs text-muted-foreground mb-3">行可以依赖列 (✓ 允许, ✗ 违规)</p>
+				<p class="text-xs text-muted-foreground mb-3">Rows can depend on columns (✓ allowed, ✗ violation)</p>
 				<div class="overflow-x-auto">
 					<table class="text-xs">
 						<thead>
@@ -253,7 +249,7 @@
 				</div>
 			</div>
 
-			<!-- 循环依赖 -->
+			<!-- Circular dependencies -->
 			<div class="bg-card border border-border rounded-xl p-4">
 				<h2 class="text-sm font-semibold text-foreground mb-3">
 					Circular Dependencies

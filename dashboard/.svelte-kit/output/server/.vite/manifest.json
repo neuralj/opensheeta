@@ -38,13 +38,6 @@
       "_index-server.js"
     ]
   },
-  "_health.js": {
-    "file": "chunks/health.js",
-    "name": "health",
-    "imports": [
-      "_repo.js"
-    ]
-  },
   "_index-server.js": {
     "file": "chunks/index-server.js",
     "name": "index-server"
@@ -61,13 +54,6 @@
       "_internal.js"
     ]
   },
-  "_memory.js": {
-    "file": "chunks/memory.js",
-    "name": "memory",
-    "imports": [
-      "_repo.js"
-    ]
-  },
   "_repo.js": {
     "file": "chunks/repo.js",
     "name": "repo"
@@ -81,17 +67,15 @@
     "name": "state",
     "imports": [
       "_repo.js",
-      "_architecture.js",
-      "_health.js",
-      "_memory.js",
-      "_timeline.js"
+      "_architecture.js"
     ]
   },
-  "_timeline.js": {
-    "file": "chunks/timeline.js",
-    "name": "timeline",
+  "_stores.js": {
+    "file": "chunks/stores.js",
+    "name": "stores",
     "imports": [
-      "_repo.js"
+      "_index-server.js",
+      "_client.js"
     ]
   },
   "_utils.js": {
@@ -144,10 +128,10 @@
     "isEntry": true,
     "imports": [
       "_index-server.js",
-      "_client.js"
+      "_stores.js"
     ],
     "css": [
-      "_app/immutable/assets/_layout.W3RWxA1C.css"
+      "_app/immutable/assets/_layout.9vBhpL6G.css"
     ]
   },
   "src/routes/+page.svelte": {
@@ -168,15 +152,6 @@
       "_architecture.js"
     ]
   },
-  "src/routes/api/churn/+server.ts": {
-    "file": "entries/endpoints/api/churn/_server.ts.js",
-    "name": "entries/endpoints/api/churn/_server.ts",
-    "src": "src/routes/api/churn/+server.ts",
-    "isEntry": true,
-    "imports": [
-      "_repo.js"
-    ]
-  },
   "src/routes/api/context/+server.ts": {
     "file": "entries/endpoints/api/context/_server.ts.js",
     "name": "entries/endpoints/api/context/_server.ts",
@@ -186,64 +161,10 @@
       "_state.js"
     ]
   },
-  "src/routes/api/drift/+server.ts": {
-    "file": "entries/endpoints/api/drift/_server.ts.js",
-    "name": "entries/endpoints/api/drift/_server.ts",
-    "src": "src/routes/api/drift/+server.ts",
-    "isEntry": true,
-    "imports": [
-      "_architecture.js"
-    ]
-  },
   "src/routes/api/files/+server.ts": {
     "file": "entries/endpoints/api/files/_server.ts.js",
     "name": "entries/endpoints/api/files/_server.ts",
     "src": "src/routes/api/files/+server.ts",
-    "isEntry": true,
-    "imports": [
-      "_repo.js"
-    ]
-  },
-  "src/routes/api/health/+server.ts": {
-    "file": "entries/endpoints/api/health/_server.ts.js",
-    "name": "entries/endpoints/api/health/_server.ts",
-    "src": "src/routes/api/health/+server.ts",
-    "isEntry": true,
-    "imports": [
-      "_health.js"
-    ]
-  },
-  "src/routes/api/memory/+server.ts": {
-    "file": "entries/endpoints/api/memory/_server.ts.js",
-    "name": "entries/endpoints/api/memory/_server.ts",
-    "src": "src/routes/api/memory/+server.ts",
-    "isEntry": true,
-    "imports": [
-      "_memory.js"
-    ]
-  },
-  "src/routes/api/memory/[id]/+server.ts": {
-    "file": "entries/endpoints/api/memory/_id_/_server.ts.js",
-    "name": "entries/endpoints/api/memory/_id_/_server.ts",
-    "src": "src/routes/api/memory/[id]/+server.ts",
-    "isEntry": true,
-    "imports": [
-      "_memory.js"
-    ]
-  },
-  "src/routes/api/quality/+server.ts": {
-    "file": "entries/endpoints/api/quality/_server.ts.js",
-    "name": "entries/endpoints/api/quality/_server.ts",
-    "src": "src/routes/api/quality/+server.ts",
-    "isEntry": true,
-    "imports": [
-      "_repo.js"
-    ]
-  },
-  "src/routes/api/services/+server.ts": {
-    "file": "entries/endpoints/api/services/_server.ts.js",
-    "name": "entries/endpoints/api/services/_server.ts",
-    "src": "src/routes/api/services/+server.ts",
     "isEntry": true,
     "imports": [
       "_repo.js"
@@ -256,15 +177,6 @@
     "isEntry": true,
     "imports": [
       "_state.js"
-    ]
-  },
-  "src/routes/api/timeline/+server.ts": {
-    "file": "entries/endpoints/api/timeline/_server.ts.js",
-    "name": "entries/endpoints/api/timeline/_server.ts",
-    "src": "src/routes/api/timeline/+server.ts",
-    "isEntry": true,
-    "imports": [
-      "_timeline.js"
     ]
   },
   "src/routes/architecture/+page.svelte": {
@@ -285,46 +197,11 @@
     "src": "src/routes/browse/+page.svelte",
     "isEntry": true,
     "imports": [
-      "_index-server.js"
+      "_index-server.js",
+      "_stores.js"
     ],
     "css": [
       "_app/immutable/assets/_page.C8cSSLm_.css"
-    ]
-  },
-  "src/routes/health/+page.svelte": {
-    "file": "entries/pages/health/_page.svelte.js",
-    "name": "entries/pages/health/_page.svelte",
-    "src": "src/routes/health/+page.svelte",
-    "isEntry": true,
-    "imports": [
-      "_index-server.js"
-    ]
-  },
-  "src/routes/memory/+page.svelte": {
-    "file": "entries/pages/memory/_page.svelte.js",
-    "name": "entries/pages/memory/_page.svelte",
-    "src": "src/routes/memory/+page.svelte",
-    "isEntry": true,
-    "imports": [
-      "_index-server.js"
-    ]
-  },
-  "src/routes/services/+page.svelte": {
-    "file": "entries/pages/services/_page.svelte.js",
-    "name": "entries/pages/services/_page.svelte",
-    "src": "src/routes/services/+page.svelte",
-    "isEntry": true,
-    "imports": [
-      "_index-server.js"
-    ]
-  },
-  "src/routes/timeline/+page.svelte": {
-    "file": "entries/pages/timeline/_page.svelte.js",
-    "name": "entries/pages/timeline/_page.svelte",
-    "src": "src/routes/timeline/+page.svelte",
-    "isEntry": true,
-    "imports": [
-      "_index-server.js"
     ]
   },
   "virtual:__sveltekit/env": {

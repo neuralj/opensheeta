@@ -11,7 +11,7 @@
 			const shiki = await import('shiki');
 			const highlighter = await shiki.createHighlighter({
 				themes: ['github-dark-default'],
-				langs: ['typescript', 'javascript', 'json', 'yaml', 'bash', 'python', 'go', 'html', 'css', 'sql', 'xml', 'dockerfile', 'toml']
+				langs: ['typescript', 'javascript', 'json', 'yaml', 'bash', 'python', 'go', 'html', 'css', 'sql', 'xml', 'dockerfile', 'toml', 'rust', 'scss', 'svelte', 'tsx', 'jsx']
 			});
 			highlighted = highlighter.codeToHtml(content, {
 				lang: language,

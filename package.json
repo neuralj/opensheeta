@@ -7,15 +7,16 @@
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "tsx watch src/daemon.ts",
     "dev:frontend": "cd frontend && npm run dev",
-    "build": "npm run build:frontend && npm run build:backend",
-    "build:frontend": "cd frontend && npm run build",
+    "dev:dashboard": "cd dashboard && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend && npm run build:dashboard",
     "build:backend": "tsup",
+    "build:frontend": "cd frontend && npm run build",
+    "build:dashboard": "cd dashboard && npm run build",
     "start": "tsx src/daemon.ts",
-    "test": "vitest",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "mcp:connectors": "tsx mcp-servers/connector-server.ts",
-    "mcp:memory": "tsx mcp-servers/memory-server.ts",
-    "dev:dashboard": "cd dashboard && npm run dev"
+    "mcp:memory": "tsx mcp-servers/memory-server.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.12",
