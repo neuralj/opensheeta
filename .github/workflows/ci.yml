@@ -35,11 +35,11 @@ jobs:
       - name: Run tests
         run: npm test
       
-      - name: Build backend
-        run: npm run build:backend
-      
       - name: Build frontend
         run: npm run build:frontend
+      
+      - name: Build backend
+        run: npm run build:backend
       
       - name: Build dashboard
         run: npm run build:dashboard

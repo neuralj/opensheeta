@@ -1,5 +1,5 @@
 import { defineConfig } from "tsup"
-import { cpSync } from "fs"
+import { cpSync, existsSync } from "fs"
 
 export default defineConfig({
   entry: ["src/daemon.ts"],
@@ -15,6 +15,8 @@ export default defineConfig({
   treeshake: true,
   tsconfig: "tsconfig.json",
   onSuccess: async () => {
-    cpSync("frontend/dist", "dist/public", { recursive: true })
+    if (existsSync("frontend/dist")) {
+      cpSync("frontend/dist", "dist/public", { recursive: true })
+    }
   },
 })
