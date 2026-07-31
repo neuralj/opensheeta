@@ -31,7 +31,7 @@ declare module "sql.js" {
 }
 
 declare module "croner" {
-  export class CronJob {
+  export class Cron {
     constructor(pattern: string, options?: { timezone?: string }, func?: () => void)
     stop(): void
   }

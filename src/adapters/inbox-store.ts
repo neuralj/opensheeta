@@ -1,7 +1,8 @@
 import initSqlJs, { type Database } from "sql.js"
 import type { Logger } from "@/shared/logger"
 import type { OWInboxItem } from "@/types/openworker"
-import { readFileSync, writeFileSync, existsSync } from "fs"
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs"
+import { dirname } from "path"
 
 export interface InboxStoreAdapter {
   addItem(item: Omit<OWInboxItem, "id" | "created_at" | "state" | "resolution" | "resolved_at">): Promise<OWInboxItem>
@@ -13,6 +14,7 @@ export interface InboxStoreAdapter {
 
 export async function createInboxStore(dbPath: string, logger: Logger): Promise<InboxStoreAdapter> {
   const log = logger.child({ component: "inbox-store" })
+  mkdirSync(dirname(dbPath), { recursive: true })
   const SQL = await initSqlJs()
 
   let db: Database

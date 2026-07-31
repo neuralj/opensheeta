@@ -1,21 +1,16 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-
-	interface RepoState {
-		repo: { name: string; branch: string; totalCommits: number; lastCommit: { hash: string; message: string; date: string; author: string } };
-		architecture: { totalFiles: number; totalImports: number; layerCounts: Record<string, number>; hotModules: { path: string; changes: number }[] };
-		ci: { latestStatus: 'passing' | 'failing' | 'pending' | 'unknown'; totalRuns: number };
-	}
+	import type { RepoState } from '$lib/types.js';
 
 	let repoState: RepoState | null = $state(null);
 	let loading: boolean = $state(true);
 	let error: string = $state('');
 
-	async function loadState() {
+	async function loadState(refresh = false) {
 		loading = true;
 		error = '';
 		try {
-			const res = await fetch('/api/state');
+			const res = await fetch(refresh ? '/api/state?refresh=1' : '/api/state');
 			repoState = await res.json();
 		} catch (e) {
 			error = String(e);
@@ -53,8 +48,8 @@
 				{repoState ? `${repoState.repo.branch} · ${repoState.repo.totalCommits} commits · last: ${repoState.repo.lastCommit.message.slice(0, 60)}` : 'Loading...'}
 			</p>
 		</div>
-		<button onclick={loadState} class="px-3 py-1.5 rounded-lg bg-card border border-border text-sm hover:bg-muted transition-colors">
-			Refresh
+		<button onclick={() => loadState(true)} disabled={loading} class="px-3 py-1.5 rounded-lg bg-card border border-border text-sm hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+			{loading ? 'Refreshing...' : 'Refresh'}
 		</button>
 	</div>
 

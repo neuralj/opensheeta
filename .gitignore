@@ -3,6 +3,7 @@ dist/
 .venv/
 *.db
 *.db-journal
+data/
 secrets.json
 .env
 *.log

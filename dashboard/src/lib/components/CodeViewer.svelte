@@ -1,3 +1,20 @@
+<script module lang="ts">
+	// Shared shiki highlighter singleton across all instances
+	let highlighterPromise: Promise<Awaited<ReturnType<typeof import('shiki')['createHighlighter']>>> | null = null;
+
+	function getHighlighter() {
+		if (!highlighterPromise) {
+			highlighterPromise = import('shiki').then(async (shiki) =>
+				shiki.createHighlighter({
+					themes: ['github-dark-default'],
+					langs: ['typescript', 'javascript', 'json', 'yaml', 'bash', 'python', 'go', 'html', 'css', 'sql', 'xml', 'dockerfile', 'toml', 'rust', 'scss', 'svelte', 'tsx', 'jsx']
+				})
+			);
+		}
+		return highlighterPromise;
+	}
+</script>
+
 <script lang="ts">
 	import { onMount } from 'svelte';
 
@@ -8,11 +25,7 @@
 	onMount(async () => {
 		if (!content) return;
 		try {
-			const shiki = await import('shiki');
-			const highlighter = await shiki.createHighlighter({
-				themes: ['github-dark-default'],
-				langs: ['typescript', 'javascript', 'json', 'yaml', 'bash', 'python', 'go', 'html', 'css', 'sql', 'xml', 'dockerfile', 'toml', 'rust', 'scss', 'svelte', 'tsx', 'jsx']
-			});
+			const highlighter = await getHighlighter();
 			highlighted = highlighter.codeToHtml(content, {
 				lang: language,
 				theme: 'github-dark-default'

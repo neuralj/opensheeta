@@ -2,29 +2,11 @@ import { execSync } from 'child_process';
 import { findRepoRoot } from './repo.js';
 import { analyzeArchitecture } from './architecture.js';
 import { getCIStatus } from './ci.js';
+import type { RepoState } from '$lib/types.js';
 
 // Cache for repo state
 let stateCache: { result: RepoState; timestamp: number } | null = null;
 const CACHE_TTL = 60 * 1000; // 1 minute
-
-export interface RepoState {
-	repo: {
-		name: string;
-		branch: string;
-		totalCommits: number;
-		lastCommit: { hash: string; message: string; date: string; author: string };
-	};
-	architecture: {
-		totalFiles: number;
-		totalImports: number;
-		layerCounts: Record<string, number>;
-		hotModules: { path: string; changes: number }[];
-	};
-	ci: {
-		latestStatus: 'passing' | 'failing' | 'pending' | 'unknown';
-		totalRuns: number;
-	};
-}
 
 function getGitInfo(root: string) {
 	try {
@@ -38,23 +20,23 @@ function getGitInfo(root: string) {
 	}
 }
 
-export async function getRepoState(): Promise<RepoState> {
+export async function getRepoState(options?: { force?: boolean }): Promise<RepoState> {
 	// Check cache first
-	if (stateCache && Date.now() - stateCache.timestamp < CACHE_TTL) {
+	if (!options?.force && stateCache && Date.now() - stateCache.timestamp < CACHE_TTL) {
 		return stateCache.result;
 	}
 
 	const root = findRepoRoot();
 	const gitInfo = getGitInfo(root);
 	const arch = analyzeArchitecture();
-	const ci = await getCIStatus();
+	const ci = await getCIStatus(options);
 
 	const layerCounts: Record<string, number> = {};
 	for (const layer of arch.layers) {
 		layerCounts[layer.name] = layer.files.length;
 	}
 
-	const result = {
+	const result: RepoState = {
 		repo: {
 			name: 'opensheeta',
 			branch: gitInfo.branch,
@@ -77,18 +59,4 @@ export async function getRepoState(): Promise<RepoState> {
 	stateCache = { result, timestamp: Date.now() };
 
 	return result;
-}
-
-export async function getContextSnapshot() {
-	const state = await getRepoState();
-	return {
-		repo: state.repo,
-		architecture: {
-			layers: state.architecture.layerCounts,
-			entry_point: 'src/daemon.ts',
-			total_files: state.architecture.totalFiles,
-			hot_modules: state.architecture.hotModules.map((m) => m.path),
-		},
-		ci: state.ci,
-	};
 }

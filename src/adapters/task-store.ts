@@ -1,7 +1,8 @@
 import initSqlJs, { type Database } from "sql.js"
 import type { Logger } from "@/shared/logger"
 import type { TaskRecord, TaskStatus, PipelineRecord, PipelineStage, RecurringRecord } from "@/types/task"
-import { readFileSync, writeFileSync, existsSync } from "fs"
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs"
+import { dirname } from "path"
 
 export interface TaskStoreAdapter {
   enqueue(task: TaskRecord): Promise<void>
@@ -32,6 +33,7 @@ export interface TaskStoreAdapter {
 
 export async function createTaskStore(dbPath: string, logger: Logger): Promise<TaskStoreAdapter> {
   const log = logger.child({ component: "task-store" })
+  mkdirSync(dirname(dbPath), { recursive: true })
   const SQL = await initSqlJs()
 
   let db: Database

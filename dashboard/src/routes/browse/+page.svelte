@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import FileTree from '$lib/components/FileTree.svelte';
 	import CodeViewer from '$lib/components/CodeViewer.svelte';
 	import MarkdownView from '$lib/components/MarkdownView.svelte';
@@ -67,12 +66,10 @@
 		}
 	}
 
-	onMount(() => {
-		const pathParam = $page.url.searchParams.get('path');
-		if (pathParam) {
-			selectFile(pathParam);
-		}
-	});
+	const pathParam = page.url.searchParams.get('path');
+	if (pathParam) {
+		selectFile(pathParam);
+	}
 </script>
 
 <div class="flex h-full">

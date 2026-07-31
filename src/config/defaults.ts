@@ -16,13 +16,13 @@ export const DEFAULTS = {
     pingIntervalMs: 840_000,
   },
   inbox: {
-    dbPath: "inbox.db",
+    dbPath: "data/inbox.db",
   },
   conversations: {
-    dbPath: "conversations.db",
+    dbPath: "data/conversations.db",
   },
   tasks: {
-    dbPath: "tasks.db",
+    dbPath: "data/tasks.db",
   },
   secrets: {
     path: "~/.config/opensheeta/secrets.json",

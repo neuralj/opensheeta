@@ -1,4 +1,4 @@
-import { CronJob } from "croner"
+import { Cron } from "croner"
 import type { Logger } from "@/shared/logger"
 
 export interface ScheduledTask {
@@ -19,7 +19,7 @@ export interface AutomationSchedulerHandler {
 }
 
 export class AutomationScheduler {
-  private jobs = new Map<string, CronJob>()
+  private jobs = new Map<string, Cron>()
   private tickTimer: ReturnType<typeof setInterval> | null = null
   private readonly tickIntervalMs: number
   private readonly logger: Logger
@@ -52,7 +52,7 @@ export class AutomationScheduler {
       if (!task.enabled) continue
       if (this.jobs.has(task.id)) continue
 
-      const job = new CronJob(task.cron, { timezone: task.timezone }, () => {
+      const job = new Cron(task.cron, { timezone: task.timezone }, () => {
         this.handler.executeTask(task, "schedule").catch((err) => {
           this.logger.error("Task execution failed", { taskId: task.id, error: String(err) })
         })
@@ -68,7 +68,7 @@ export class AutomationScheduler {
   addTask(task: ScheduledTask): void {
     this.tasks.push(task)
     if (task.enabled) {
-      const job = new CronJob(task.cron, { timezone: task.timezone }, () => {
+      const job = new Cron(task.cron, { timezone: task.timezone }, () => {
         this.handler.executeTask(task, "schedule").catch((err) => {
           this.logger.error("Task execution failed", { taskId: task.id, error: String(err) })
         })
@@ -89,7 +89,7 @@ export class AutomationScheduler {
       this.jobs.delete(id)
     }
     if (task.enabled) {
-      const job = new CronJob(task.cron, { timezone: task.timezone }, () => {
+      const job = new Cron(task.cron, { timezone: task.timezone }, () => {
         this.handler.executeTask(task, "schedule").catch((err) => {
           this.logger.error("Task execution failed", { taskId: task.id, error: String(err) })
         })

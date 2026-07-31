@@ -2,42 +2,10 @@
 	import { onMount } from 'svelte';
 	import { zoom, zoomIdentity } from 'd3-zoom';
 	import { select } from 'd3-selection';
+	import { ALLOWED_DEPS, LAYER_COLORS, LAYER_ORDER } from '$lib/architecture-constants.js';
+	import type { ArchitectureResult } from '$lib/types.js';
 
-	interface ArchResult {
-		files: { path: string; relativePath: string; layer: string; imports: string[]; lineCount: number }[];
-		layers: { name: string; files: string[]; dependsOn: string[] }[];
-		hotModules: { path: string; changes: number; lastChanged: string }[];
-		circularDeps: string[][];
-		stats: { totalFiles: number; totalImports: number; couplingScore: number; layerViolations: number };
-		mermaidGraph: string;
-		overviewGraph: string;
-	}
-
-	const layerColors: Record<string, string> = {
-		scheduler: '#89b4fa',
-		endpoint: '#a6e3a1',
-		handler: '#f9e2af',
-		adapter: '#cba6f7',
-		config: '#94e2d5',
-		types: '#f38ba8',
-		shared: '#f5c2e7',
-		other: '#6c7086'
-	};
-
-	const allowedDeps: Record<string, string[]> = {
-		scheduler: ['handler', 'adapter', 'config', 'types', 'shared'],
-		endpoint: ['handler', 'config', 'types', 'shared'],
-		handler: ['adapter', 'config', 'types', 'shared'],
-		adapter: ['config', 'types', 'shared'],
-		config: ['types', 'shared'],
-		types: ['shared'],
-		shared: [],
-		other: []
-	};
-
-	const layerOrder = ['scheduler', 'endpoint', 'handler', 'adapter', 'config', 'types', 'shared'];
-
-	let result: ArchResult | null = $state(null);
+	let result: ArchitectureResult | null = $state(null);
 	let loading: boolean = $state(true);
 	let showLegend: boolean = $state(true);
 	let zoomLevel: number = $state(1);
@@ -144,19 +112,12 @@
 	}
 
 	function getLayerColor(layer: string): string {
-		return layerColors[layer] || layerColors.other;
-	}
-
-	function getReverseDepCount(filePath: string): number {
-		if (!result) return 0;
-		return result.files.filter(f => 
-			f.imports.some(imp => filePath.includes(imp.replace('@/', '')))
-		).length;
+		return LAYER_COLORS[layer as keyof typeof LAYER_COLORS] || LAYER_COLORS.other;
 	}
 
 	function isDependencyViolation(fromLayer: string, toLayer: string): boolean {
-		const allowed = allowedDeps[fromLayer] || [];
-		return !allowed.includes(toLayer);
+		const allowed = ALLOWED_DEPS[fromLayer as keyof typeof ALLOWED_DEPS] || [];
+		return !allowed.includes(toLayer as keyof typeof ALLOWED_DEPS);
 	}
 
 	function getBrowseLink(relativePath: string): string {
@@ -200,7 +161,7 @@
 			<div class="bg-card border border-border rounded-xl p-4">
 				<h2 class="text-sm font-semibold text-foreground mb-3">Legend — Architecture Layers</h2>
 				<div class="flex flex-wrap gap-4">
-					{#each Object.entries(layerColors) as [layer, color]}
+					{#each Object.entries(LAYER_COLORS) as [layer, color]}
 						{#if layer !== 'other'}
 							<div class="flex items-center gap-2">
 								<div class="w-4 h-4 rounded" style="background: {color}33; border: 2px solid {color}"></div>
@@ -224,16 +185,16 @@
 						<thead>
 							<tr>
 								<th class="p-1 text-left text-muted-foreground"></th>
-								{#each layerOrder as layer}
+								{#each LAYER_ORDER as layer}
 									<th class="p-1 text-center capitalize" style="color: {getLayerColor(layer)}">{layer.slice(0, 4)}</th>
 								{/each}
 							</tr>
 						</thead>
 						<tbody>
-							{#each layerOrder as fromLayer}
+							{#each LAYER_ORDER as fromLayer}
 								<tr>
 									<td class="p-1 font-medium capitalize" style="color: {getLayerColor(fromLayer)}">{fromLayer.slice(0, 4)}</td>
-									{#each layerOrder as toLayer}
+									{#each LAYER_ORDER as toLayer}
 										{#if fromLayer === toLayer}
 											<td class="p-1 text-center text-muted-foreground">—</td>
 										{:else if isDependencyViolation(fromLayer, toLayer)}
@@ -340,8 +301,8 @@
 								<td class="py-1 text-right text-muted-foreground">{file.lineCount}</td>
 								<td class="py-1 text-right text-muted-foreground">{file.imports.length}</td>
 								<td class="py-1 text-right">
-									{#if getReverseDepCount(file.relativePath) > 0}
-										<span class="text-accent-blue">{getReverseDepCount(file.relativePath)}</span>
+									{#if result.reverseDeps[file.relativePath] > 0}
+										<span class="text-accent-blue">{result.reverseDeps[file.relativePath]}</span>
 									{:else}
 										<span class="text-muted-foreground">0</span>
 									{/if}

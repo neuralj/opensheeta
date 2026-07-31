@@ -131,10 +131,10 @@ scripts/services logs opensheeta
 | `OS_STANDALONE` | false | Run without OpenCode (mock API) |
 | `OS_LOG_LEVEL` | info | Log level (debug/info/warn/error) |
 | `OS_STATE_DIR` | ~/.config/opensheeta | State directory |
-| `OS_INBOX_DB` | inbox.db | Inbox database path |
-| `OS_CONV_DB` | conversations.db | Conversations database path |
-| `OS_TASKS_DB` | tasks.db | Tasks database path |
-| `OS_MEMORY_DB` | memory.db | Memory database path |
+| `OS_INBOX_DB` | data/inbox.db | Inbox database path |
+| `OS_CONV_DB` | data/conversations.db | Conversations database path |
+| `OS_TASKS_DB` | data/tasks.db | Tasks database path |
+| `OW_MEMORY_DB` | data/memory.db | Memory database path |
 | `OS_SECRETS_PATH` | ~/.config/opensheeta/secrets.json | Secrets file path |
 | `OC_PORT` | 4096 | OpenCode server port |
 | `OC_HOST` | 127.0.0.1 | OpenCode server host |

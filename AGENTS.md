@@ -68,10 +68,11 @@ Production build copies `frontend/dist` → `dist/public`, served by Hono `serve
 
 ## Storage
 
-SQLite via sql.js (WASM, file-persisted after every write):
-- `tasks.db` — Task queue, pipelines, pipeline stages, recurring tasks
-- `inbox.db` — Inbox items (approval flow)
-- `conversations.db` — Conversation history
+SQLite via sql.js (WASM, file-persisted after every write), stored in `data/`:
+- `data/tasks.db` — Task queue, pipelines, pipeline stages, recurring tasks
+- `data/inbox.db` — Inbox items (approval flow)
+- `data/conversations.db` — Conversation history
+- `data/memory.db` — Agent memory (MCP memory server)
 
 ## Key Conventions
 

@@ -3,7 +3,8 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js"
 import initSqlJs, { type Database } from "sql.js"
 import type { Logger } from "@/shared/logger"
-import { readFileSync, writeFileSync, existsSync } from "fs"
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs"
+import { dirname } from "path"
 
 export interface MemoryMCPOptions {
   dbPath: string
@@ -13,6 +14,7 @@ export interface MemoryMCPOptions {
 export async function startMemoryMCPServer(opts: MemoryMCPOptions): Promise<void> {
   const { dbPath, logger } = opts
   const log = logger.child({ component: "memory-mcp" })
+  mkdirSync(dirname(dbPath), { recursive: true })
 
   const SQL = await initSqlJs()
   let db: Database

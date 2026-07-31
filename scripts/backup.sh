@@ -13,8 +13,8 @@ echo "Starting Opensheeta backup at $(date)"
 # 创建备份目录
 mkdir -p "$BACKUP_DIR"
 
-# 获取状态目录
-STATE_DIR="${OS_STATE_DIR:-$HOME/.config/opensheeta}"
+# 获取数据目录
+DATA_DIR="${OS_DATA_DIR:-data}"
 
 # 备份数据库文件
 DATABASES=(
@@ -25,7 +25,7 @@ DATABASES=(
 )
 
 for db in "${DATABASES[@]}"; do
-    src="$STATE_DIR/$db"
+    src="$DATA_DIR/$db"
     dst="$BACKUP_DIR/${db%.db}_$DATE.db"
     
     if [ -f "$src" ]; then

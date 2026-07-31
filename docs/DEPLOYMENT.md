@@ -62,11 +62,10 @@ OC_PORT=4096
 OC_HOST=127.0.0.1
 
 # 数据库路径
-OS_STATE_DIR=~/.config/opensheeta
-OS_TASKS_DB=tasks.db
-OS_INBOX_DB=inbox.db
-OS_CONV_DB=conversations.db
-OS_MEMORY_DB=memory.db
+OS_TASKS_DB=data/tasks.db
+OS_INBOX_DB=data/inbox.db
+OS_CONV_DB=data/conversations.db
+OW_MEMORY_DB=data/memory.db
 ```
 
 ## 服务管理
@@ -243,10 +242,10 @@ DATE=$(date +%Y%m%d_%H%M%S)
 mkdir -p $BACKUP_DIR
 
 # 备份数据库
-cp ~/.config/opensheeta/tasks.db $BACKUP_DIR/tasks_$DATE.db
-cp ~/.config/opensheeta/inbox.db $BACKUP_DIR/inbox_$DATE.db
-cp ~/.config/opensheeta/conversations.db $BACKUP_DIR/conversations_$DATE.db
-cp ~/.config/opensheeta/memory.db $BACKUP_DIR/memory_$DATE.db
+cp data/tasks.db $BACKUP_DIR/tasks_$DATE.db
+cp data/inbox.db $BACKUP_DIR/inbox_$DATE.db
+cp data/conversations.db $BACKUP_DIR/conversations_$DATE.db
+cp data/memory.db $BACKUP_DIR/memory_$DATE.db
 
 # 保留最近 7 天的备份
 find $BACKUP_DIR -name "*.db" -mtime +7 -delete
@@ -335,7 +334,7 @@ ls -la ~/.config/opensheeta/
 scripts/services stop opensheeta
 
 # 从备份恢复
-cp /var/backups/opensheeta/tasks_latest.db ~/.config/opensheeta/tasks.db
+cp /var/backups/opensheeta/tasks_latest.db data/tasks.db
 
 # 启动服务
 scripts/services start opensheeta

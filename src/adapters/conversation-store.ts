@@ -1,6 +1,7 @@
 import initSqlJs, { type Database } from "sql.js"
 import type { Logger } from "@/shared/logger"
-import { readFileSync, writeFileSync, existsSync } from "fs"
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs"
+import { dirname } from "path"
 
 export interface ConversationRecord {
   session_id: string
@@ -25,6 +26,7 @@ export interface ConversationStoreAdapter {
 
 export async function createConversationStore(dbPath: string, logger: Logger): Promise<ConversationStoreAdapter> {
   const log = logger.child({ component: "conversation-store" })
+  mkdirSync(dirname(dbPath), { recursive: true })
   const SQL = await initSqlJs()
 
   let db: Database

@@ -30,7 +30,7 @@ log_error() {
 cleanup() {
     log_info "Cleaning up..."
     docker rm -f $CONTAINER_NAME 2>/dev/null || true
-    rm -f inbox.db conversations.db
+    rm -f data/inbox.db data/conversations.db
 }
 
 trap cleanup EXIT

@@ -5,29 +5,31 @@ import { findRepoRoot } from '$lib/server/repo';
 
 const REPO_ROOT = findRepoRoot();
 
+function safePath(path: string): string | null {
+	const fullPath = resolve(join(REPO_ROOT, path));
+	return fullPath.startsWith(REPO_ROOT) ? fullPath : null;
+}
+
 export async function GET({ url }) {
 	const path = url.searchParams.get('path') || '';
 	const action = url.searchParams.get('action') || 'list';
 
 	try {
+		const fullPath = safePath(path);
+		if (!fullPath) {
+			return json({ error: 'Access denied' }, { status: 403 });
+		}
+
 		if (action === 'content') {
-			const fullPath = resolve(join(REPO_ROOT, path));
-			if (!fullPath.startsWith(REPO_ROOT)) {
-				return json({ error: 'Access denied' }, { status: 403 });
-			}
 			const content = await readFile(fullPath, 'utf-8');
 			return json({ content, path });
 		}
 
-		const fullPath = resolve(join(REPO_ROOT, path));
-		if (!fullPath.startsWith(REPO_ROOT)) {
-			return json({ error: 'Access denied' }, { status: 403 });
-		}
 		const entries = await readdir(fullPath, { withFileTypes: true });
 		const items = await Promise.all(
 			entries
-				.filter((e: { name: string }) => !e.name.startsWith('.'))
-				.map(async (e: { name: string; isDirectory: () => boolean }) => {
+				.filter((e) => !e.name.startsWith('.'))
+				.map(async (e) => {
 					const itemPath = join(path, e.name);
 					const s = await stat(join(fullPath, e.name)).catch(() => null);
 					return {
@@ -38,7 +40,7 @@ export async function GET({ url }) {
 					};
 				})
 		);
-		items.sort((a: { isDirectory: boolean; name: string }, b: { isDirectory: boolean; name: string }) => {
+		items.sort((a, b) => {
 			if (a.isDirectory !== b.isDirectory) return a.isDirectory ? -1 : 1;
 			return a.name.localeCompare(b.name);
 		});
